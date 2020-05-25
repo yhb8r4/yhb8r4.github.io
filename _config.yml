@@ -261,11 +261,3 @@ defaults:
     values:
       layout: single
       author_profile: true
-
-  # _rposts
-  - scope:
-      path: ""
-      type: rposts
-    values:
-      layout: single
-      author_profile: true

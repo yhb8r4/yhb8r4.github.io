@@ -2,8 +2,6 @@
 main:
   - title: "About"
     url: /about/
-  - title: "R Notebooks"
-    url: /r-notebooks/
   - title: "Data Wrangling Projects"
     url: /data-wrangling/
   # - title: "About"
