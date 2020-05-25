@@ -9,7 +9,7 @@ mathjax: "true"
 ---
 #Terri's First Jupyter Notebook Upload
 
-I'm just folowing the tutorial.
+I'm just following the tutorial.
 
 ...
 
