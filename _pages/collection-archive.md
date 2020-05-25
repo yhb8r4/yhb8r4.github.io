@@ -1,6 +1,6 @@
 ---
 title: "Collections"
-permalink: /collection-archives/
+permalink: /collection-archive/
 header:
   image: "/images/zakim.jpg"
 ---
