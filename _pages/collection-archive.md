@@ -1,4 +1,5 @@
 ---
+layout: rnotebooks
 title: "Collections"
 permalink: /collection-archive/
 header:
