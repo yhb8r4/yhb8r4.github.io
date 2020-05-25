@@ -261,3 +261,10 @@ defaults:
     values:
       layout: single
       author_profile: true
+  # _rnotebooks
+  -scope:
+      path: ""
+      type: rnotebooks
+  values:
+      layout: single
+      author_profile: true 
