@@ -112,7 +112,7 @@ author:
       icon: "fab fa-fw fa-facebook-square"
       # url: "https://facebook.com/"
     - label: "GitHub"
-      icon: "fab fa-fw fa-github"
+      icon: "yhb8r4"
       # url: "https://github.com/"
     - label: "Instagram"
       icon: "fab fa-fw fa-instagram"
@@ -285,4 +285,4 @@ defaults:
 #    type: pages
 #    values:
 #      layout: single
-#      author_profile: true 
+#      author_profile: true
