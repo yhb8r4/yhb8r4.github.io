@@ -262,10 +262,10 @@ defaults:
       layout: single
       author_profile: true
 
-  # _r_notebooks
+  # _rposts
   - scope:
       path: ""
-      type: r_notebooks
+      type: rposts
     values:
       layout: single
       author_profile: true
