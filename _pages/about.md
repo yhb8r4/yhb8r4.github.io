@@ -5,6 +5,6 @@ header:
   image: "/images/zakim.jpg"
 ---
 
-I'm a senior data scientist who excels at data wrangling, machine learning, exploratory analysis, and data visualizations.
+I'm a senior scientist working in big pharma, who excels at data wrangling and data visualizations.
 
-Etc, etc, etc
+I'm always looking to gain more experience - so feel free to reach out!
