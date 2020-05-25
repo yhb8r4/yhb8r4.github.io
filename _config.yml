@@ -240,6 +240,11 @@ compress_html:
     envs: development
 
 
+collections:
+  portfolio:
+    output: true
+    permalink: /:collection/:path/
+    
 # Defaults
 defaults:
   # _posts
@@ -268,10 +273,5 @@ defaults:
       type: portfolio
   values:
       layout: single
-      author_profile: true
-      share: true 
-
-collections:
-  portfolio:
-    output: true
-    permalink: /:collection/:path/
+      author_profile: false
+      share: true
