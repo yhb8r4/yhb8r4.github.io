@@ -2,9 +2,9 @@
 title: "About"
 permalink: /about/
 header:
-  image: "/images/zakim.jpg"
+  image: "/images/atkins-art-museum-1619504_1920.jpg"
 ---
 
-I'm a senior scientist working in big pharma, who excels at data wrangling and data visualizations.
+Hi! My name is Terri and I am a Sr. Scientist working in the Pharmaceutical Industry.
 
-I'm always looking to gain more experience - so feel free to reach out!
+I spend most of my time cleaning (90%) data and visualizing it (10%).

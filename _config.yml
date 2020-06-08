@@ -11,7 +11,7 @@ minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt"
 locale                   : "en-US"
 title                    : "The Data Janitor"
 title_separator          : "-"
-name                     : "Terri B."
+name                     : "Terri Bui"
 description              : "Data Science Portfolio"
 url                      : # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : # the subpath of your site, e.g. "/blog"
@@ -84,8 +84,8 @@ analytics:
 
 # Site Author
 author:
-  name             : "Terri B."
-  avatar           : "/images/bio-pic-2.jpg" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
+  name             : "Terri Bui"
+  avatar           : "/images/bio_memoji.png" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
   bio              : "Data Science Portfolio"
   location         : "Kenilworth, NJ"
   email            :
@@ -261,11 +261,3 @@ defaults:
     values:
       layout: single
       author_profile: true
-
-  # _rnotebooks
-  - scope:
-      path: ""
-      type: rnotebooks
-      values:
-        layout: single
-        author_profile: true

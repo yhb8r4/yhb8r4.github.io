@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2020-06-08T08:33:45-04:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">The Data Janitor</title><subtitle>Data Science Portfolio</subtitle><author><name>Terri Bui</name></author><entry><title type="html">EFPMC: A Monte Carlo implementation with the EFP Method</title><link href="http://localhost:4000/EFPMC/" rel="alternate" type="text/html" title="EFPMC: A Monte Carlo implementation with the EFP Method" /><published>2020-06-07T00:00:00-04:00</published><updated>2020-06-07T00:00:00-04:00</updated><id>http://localhost:4000/EFPMC</id><content type="html" xml:base="http://localhost:4000/EFPMC/">&lt;p&gt;It is important to know the effect of cofactors on cocrystal formulations for active pharmaceutical ingredients. However, performing an exhaustive experimental screening is experimentally expensive. Thus, there is a need for a tool that is relatively accurate yet computationally cost effective for the virtual screening of drugs based on changes in functional group interaction energies in order to approximate free energy changes. Here, we describe the implementation of the Monte-Carlo method and perform some simple benchmarking studies.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Monte-Carlo Sampling&lt;/strong&gt;
+Here we describe the technical implementation of a Monte-Carlo integration over configuration space using the effective fragment potential (EFP) method as a description for a chemical system. Using the effective fragment potential method, is possible to calculate energetic properties of any substance of a system of &lt;script type=&quot;math/tex&quot;&gt;N&lt;/script&gt; interacting EFP fragments:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;E^{EFP}=E_{coul}+E_{ind}+E_{exch}+E_{disp}+(E_{CT})&lt;/script&gt;
+
+&lt;p&gt;In order to explore the configurational space, random sampling of points are obtained through moving each EFP fragments from an initial configuration in succession:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;x = x + \alpha\xi_{x}&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;y = y + \alpha\xi_{y}&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;z = z + \alpha\xi_{z}&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;a = a + \alpha\xi_{a}&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;b = b + \alpha\xi_{b}&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;c = c + \alpha\xi_{c}&lt;/script&gt;
+
+&lt;p&gt;where &lt;script type=&quot;math/tex&quot;&gt;\alpha&lt;/script&gt; is the maximum allowed displacement, and &lt;script type=&quot;math/tex&quot;&gt;\xi_{x}&lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt;\xi_{y}&lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt;\xi_{z}&lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt;\xi_{a}&lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt;\xi_{b}&lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt;\xi_{c}&lt;/script&gt; are random numbers between (-1) and 1. &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt;y&lt;/script&gt;, and &lt;script type=&quot;math/tex&quot;&gt;z&lt;/script&gt; refer to the Cartesian coordinates for the center of mass of a fragment. &lt;script type=&quot;math/tex&quot;&gt;a&lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt;b&lt;/script&gt;, and &lt;script type=&quot;math/tex&quot;&gt;c&lt;/script&gt; refer the fragment’s Euler angles. The change in energy of the system &lt;script type=&quot;math/tex&quot;&gt;\Delta E&lt;/script&gt; following the move is calculated. If &lt;script type=&quot;math/tex&quot;&gt;\Delta E &gt; 0&lt;/script&gt;, then the move is evaluated against probability of &lt;script type=&quot;math/tex&quot;&gt;exp(\Delta E/kT))&lt;/script&gt; where a random number  &lt;script type=&quot;math/tex&quot;&gt;\xi_{4}&lt;/script&gt; between 0 and 1 is evaluated against &lt;script type=&quot;math/tex&quot;&gt;exp(\Delta E/kT))&lt;/script&gt;. If &lt;script type=&quot;math/tex&quot;&gt;% &lt;![CDATA[
+\xi_{4}\ &lt; exp(\Delta E/kT)) %]]&gt;&lt;/script&gt;, then the system configuration is accepted despite &lt;script type=&quot;math/tex&quot;&gt;\Delta E &gt; 0&lt;/script&gt;. However if &lt;script type=&quot;math/tex&quot;&gt;\xi_{4}\ &gt; exp(\Delta E/kT))&lt;/script&gt;, then the move is rejected and the system is returned to its prior configuration.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Technical Implementation&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The general EFP method has been implemented as a library API called &lt;a href=&quot;https://github.com/ilyak/libefpl&quot;&gt;libefp&lt;/a&gt;.  The libefp library and efpmd integration program are written in fully portable standard C language and parallelized using OpenMP. Here we describe some brief additional functions to efpmd program that serves as the integrator for a Monte-Carlo simulation with the EFP method. You can find a branch of the efpmd-mc implementation at my branch &lt;a href=&quot;https://github.com/yhb8r4/libefp&quot;&gt;libefp_Terri&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Here is a general scheme of my modification to the source code:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/efpmd_mc/mc_software.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In order to perform Monte-Carlo using the EFP method, a new subroutine sim_mc() was introduced and linked to the efpmd program. The simulation configurations for performing a EFP-MC calculations, involve the run_type flag introduced as ‘run_type mc’ and max_step and temp general parameters for the simulation. Similarly to other run_types in efpmd, sim_mc() is initialized in its own header file (mc.h) and declared in mc.c, both located in the ~/efpmd/src/ directory. sim_mc includes/calls on other functions in the efpmd program through header files math.h, common.h, and rand.h. Running a EFP-MC related parameters that control the step size are:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Max Displacement Step Size: dismag_threshold [default = 0.05]&lt;/li&gt;
+  &lt;li&gt;Update Displacement Step Size: dismag_modifier [default = 0.95]&lt;/li&gt;
+  &lt;li&gt;Frequency of Updating Displacement: dismag_modify_steps [default = 100]&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;System information is parsed and stored in struct mc_state in the void mc_create. It is within mc_state that the initial configuration for the original configuration is accessible. Mc_state also contains a dynamic array for proposed configuration x_prop that is updated at each step of the simulation.  Enum mc_init is the function that allocates the memory for mc_state, along with initializing the Monte-Carlo step counter ‘step’, the initial accepted step n_accept and rejected steps n_reject.&lt;/p&gt;
+
+&lt;p&gt;Accessory functions such mc_set_func() and mc_set_user_data() are provided in order to transfer data structures and simulation configuration information populated within the initial main() function in main.c to data structures within sim_mc(). Sim_mc which is able to communicate with the library function libefp through subroutine check_fail() that passes the atomic coordinate and point charge coordinate information for each fragment.&lt;/p&gt;
+
+&lt;p&gt;When running a Monte-Carlo simulation, sim_mc calls on mc_step() multiple times in a while loop for the number of max_steps the user specifies. At each step, mc_rand() is called to randomize the center of mass (COM) of one fragment in the simulation. The energy of the state is obtained through compute_efp() that calls on libefp function efp_compute() through compute_energy(). With each Monte-Carlo step, evaluation of the move is done through check_acceptance(). If the move is accepted, the proposed coordinates stored in struct x_prop will be copied to struct x. Else, another step is taken and the proposed configuration is evaluated.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;S22 Dataset&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;In order to examine the robust of the Monte-Carlo code it was necessary to examine the ability of the program to sample different phase space of different systems. Previous efp parameters generated for the S22 dataset are readily available through the libefp package. The Coulomb part of these parameters was obtained with analytic Stone DMA, using HF/6-31+G(d)(42-44) and HF/6-31G(d) for nonaromatic and aromatic molecules, respectively. The rest of the potential, that is, static and dynamic polarizability tensors, wave function, Fock matrix, etc., were obtained with the 6-311++G(3df,2p) basis set.(44-46) To account for the short-range charge-penetration effects, overlap-based electrostatic and dispersion screenings as well as Gaussian-like polarization screening were employed.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Finding the potential minima from an optimized geometry&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/efpmd_mc/ccsdstructures.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;S22 is a data set of dimer complexes are divided into three subgroups: (i) hydrogen bonded complexes; (ii) complexes with predominant dispersion stabilization; (iii) mixed complexes in which electrostatic and dispersion contributions that are similar in magnitude.  Of the 22  complexes, 6 of the dimers were optimized at the CCSD(T) level in cc-pVTZ and cc-pVQZ basis sets, and so were selected as initial configurations.&lt;/p&gt;
+
+&lt;p&gt;Each configuration served as the initial step, for an EFP-MC simulation with 10,000. Each simulation was run with a displacement maximum threshold of 0.05 and displacement modifier of 0.95 utilized ever 500 steps. After the simulation, the configuration with the lowest energy was obtained for each dimer and geometry optimized using efpmd. The geometry optimized structure following Monte-Carlo simulation (EFP MC_Opt) was then compared against a EFP geometry optimized structure (EFP Opt) and the initial CCSD(T) structure itself (CCSD Opt).&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Complex&lt;/th&gt;
+      &lt;th&gt;EFP MC&lt;/th&gt;
+      &lt;th&gt;EFP MC_Opt&lt;/th&gt;
+      &lt;th&gt;EFP Opt&lt;/th&gt;
+      &lt;th&gt;CCSD Opt&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ammonia&lt;/td&gt;
+      &lt;td&gt;-4.72&lt;/td&gt;
+      &lt;td&gt;-5.37&lt;/td&gt;
+      &lt;td&gt;-5.37&lt;/td&gt;
+      &lt;td&gt;-3.17&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ethene&lt;/td&gt;
+      &lt;td&gt;-2.70&lt;/td&gt;
+      &lt;td&gt;-3.16&lt;/td&gt;
+      &lt;td&gt;-3.16&lt;/td&gt;
+      &lt;td&gt;-1.51&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ethene-ethyne&lt;/td&gt;
+      &lt;td&gt;-1.92&lt;/td&gt;
+      &lt;td&gt;-2.32&lt;/td&gt;
+      &lt;td&gt;-2.32&lt;/td&gt;
+      &lt;td&gt;-1.53&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;formic acid&lt;/td&gt;
+      &lt;td&gt;-980.38&lt;/td&gt;
+      &lt;td&gt;-16.65&lt;/td&gt;
+      &lt;td&gt;-16.65&lt;/td&gt;
+      &lt;td&gt;-18.61&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;methane&lt;/td&gt;
+      &lt;td&gt;-0.92&lt;/td&gt;
+      &lt;td&gt;-1.04&lt;/td&gt;
+      &lt;td&gt;-1.04&lt;/td&gt;
+      &lt;td&gt;-0.53&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;water&lt;/td&gt;
+      &lt;td&gt;-5.90&lt;/td&gt;
+      &lt;td&gt;-5.99&lt;/td&gt;
+      &lt;td&gt;-5.99&lt;/td&gt;
+      &lt;td&gt;-5.02&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Using the Monte-Carlo method with EFP would likely find a non-equilibrium configuration close to one of the local EFP minima. Optimization of that non-equilibrium configuration, would result in finding this local EFP minimum. EFP-MC values for the lowest energy minima using a geometry optimized EFP-MC (EFP MC_Opt), EFP-MC (EFP MC), EFP optimized structure (EFP Opt), and CCSD(T) initial reference structure (CCSD Opt).&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Finding Potential Minima From Non-equilibrium Geometries&lt;/em&gt;
+Rather than focus on finding a single minima/stationary point, it was important to see if the Monte-Carlo algorithm in conjunction with EFP would be able to explore and find local minima beyond the minima obtained through geometry optimization. Thus, the EFP parameters for 6 dimer complex from the S22 dataset were once more utilized. However, the initial configurations were not the obtained CCSD(T) geometry optimized structures, but were randomly placed twice the original intermolecular distance apart. These geometries were obtained from the S22 nonequilibrium geometries . For each dimer complex, a Monte-Carlo simulation was run for 10,000 steps, displacement maximum threshold of 0.05 and displacement modifier of 0.95 utilized ever 500 steps. After the simulation, the configuration with the lowest energy was obtained for each dimer and geometry optimized using efpmd. The geometry optimized structure following Monte-Carlo simulation was then compared against a reference efpmd geometry optimized starting from the 10 angstrom apart dimer structure.&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Complex&lt;/th&gt;
+      &lt;th&gt;EFP MC_Opt&lt;/th&gt;
+      &lt;th&gt;EFP Opt&lt;/th&gt;
+      &lt;th&gt;CCSD Opt&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ammonia&lt;/td&gt;
+      &lt;td&gt;-&lt;/td&gt;
+      &lt;td&gt;-1.67&lt;/td&gt;
+      &lt;td&gt;-0.36&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ethene&lt;/td&gt;
+      &lt;td&gt;-1.86&lt;/td&gt;
+      &lt;td&gt;-3.15&lt;/td&gt;
+      &lt;td&gt;-0.03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ethene-ethyne&lt;/td&gt;
+      &lt;td&gt;-1.55&lt;/td&gt;
+      &lt;td&gt;-1.54&lt;/td&gt;
+      &lt;td&gt;-0.15&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;formic acid&lt;/td&gt;
+      &lt;td&gt;-16.61&lt;/td&gt;
+      &lt;td&gt;-16.61&lt;/td&gt;
+      &lt;td&gt;-3.63&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;methane&lt;/td&gt;
+      &lt;td&gt;-1.03&lt;/td&gt;
+      &lt;td&gt;-1.03&lt;/td&gt;
+      &lt;td&gt;-0.01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;water&lt;/td&gt;
+      &lt;td&gt;-7.07&lt;/td&gt;
+      &lt;td&gt;-5.71&lt;/td&gt;
+      &lt;td&gt;-0.96&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;In the Table we see that EFP using Monte-Carlo was able to obtain different minima (EFP MC_Opt vs. EFP Opt) rather than just falling into the original geometry optimized minima presented  - implying that the system was able to overcome energy barriers and explore different potential energy minima. With Ammonia, we were not able to obtain a optimizable local minima using the same simulation with Monte-Carlo and so is not provided in this table. The ability to EFP-MC explore potential minima was encouraging and thus we attempted to find local stationary points on well established potential energy surfaces of a water dimer.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Water Dimer Local Minima&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/efpmd_mc/water_dimer_stationary.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Here, the water dimer configuration obtained from S22 nonequilium dimer configuration served as the initial step. The simulation was ran with 10,000 steps using efpmd with a displacement maximum threshold of 0.05 and displacement modifier of 0.95 utilized ever 500 steps with periodic conditions of 10 Angstrom. After the simulation, each Monte-Carlo step was then geometry optimized using efpmd. The initial Monte-Carlo obtained configurations are depicted in the figure below as energetic states distinguishable by intermolecular distance (without periodic boundary conditions applied). Although, the obtained energies are obtained with periodic boundary conditions, it was easier to distinguish individual states with respect to their coordinates without PBC in order to ‘smear’ the density of points and see energy groupings.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/efpmd_mc/water_dimer_mc_initial.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/efpmd_mc/water_dimer_opt.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;When looking at the obtained energy states (See Fig. \ref{fig:water-dimer-opt}  from the initial configurations, we see a reduction in the number configurations and it is easy to ascertain that there are approximately 3 ‘lines’ or minima of a water dimer in Fig. \ref{fig:water-dimer-opt}. From these configurations, the 3 final configurations found (see Fig. \ref{fig:water-dimer-stationary} correspond to the linear (I), cyclic (II), and bifurcated (III) CI potential minima by Matsoka et. all \cite{MatsuokaO1976Csot}. EFP energies and CI literature energies \cite{MatsuokaO1976Csot} are reported as:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Configuration&lt;/th&gt;
+      &lt;th&gt;EFP&lt;/th&gt;
+      &lt;th&gt;CI&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Linear&lt;/td&gt;
+      &lt;td&gt;-5.98&lt;/td&gt;
+      &lt;td&gt;-5.6&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Cyclic&lt;/td&gt;
+      &lt;td&gt;-7.08&lt;/td&gt;
+      &lt;td&gt;-4.9&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Bifurcated&lt;/td&gt;
+      &lt;td&gt;-5.72&lt;/td&gt;
+      &lt;td&gt;-4.2&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;This is a promising result that EFP is able to minimally obtain previously cited local minimum obtained using CI methods.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Conclusions&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The theoretical and technical implementation of the Monte-Carlo method in the libefp package is reported. Benchmark studies on the ability of EFP-MC to appropriately phase-space sample relative to both CCSD(T) geometry optimized equilibrium and non-equilibrium geometries on the S22 dataset are reported. The configurations obtained and presented here are in good agreement with those obtained using accurate first principles methods as demonstrated by finding the linear, cyclic, and bifurcated structures with comparable energetics. These results demonstrate EFP-MC as method for obtaining local and global minima on a potential energy surface of a molecular model. Thus, this work serves as a promising means to perform co-crystal screening with EFP-MC as a sophisticated alternative to docking methods.&lt;/p&gt;</content><author><name>Terri Bui</name></author><category term="libefp" /><category term="EFPMD" /><category term="polarizable force field" /><category term="molecular dynamics" /><category term="MD" /><category term="efp method" /><summary type="html">Overcoming Energy Barriers</summary></entry><entry><title type="html">Molecular Fingerprints: Implementation of a pairwise distribution based molecular representation</title><link href="http://localhost:4000/similarity_measures/" rel="alternate" type="text/html" title="Molecular Fingerprints: Implementation of a pairwise distribution based molecular representation" /><published>2020-06-07T00:00:00-04:00</published><updated>2020-06-07T00:00:00-04:00</updated><id>http://localhost:4000/similarity_measures</id><content type="html" xml:base="http://localhost:4000/similarity_measures/">&lt;p&gt;However, determining the robustness of a method against other methods is usually closer to the ‘downstream’ or final stages of a workbench simulation process investigating dynamical properties of a molecular system. The precursor to any sort of benchmarking or validation of a method on a particular model involves analysis of the system with respect to its varying parameters. With the case of our benchmarking and phase-space sampling studies, molecular configuration and orientation should be closely analyzed. Thus, for our large sets of data, this involves utilizing automated and robust structure comparison methods in order to assess the robustness of a set of configurations by assigning some sort of quantitative value through the use of a similarity metric. Ideally, a similarity measure should be able to:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;provide an index value that ranks
+structures/configurations of a molecular system based on their similarity with a minimal overlap - providing a high degree of resolution between clusters of structures.&lt;/li&gt;
+  &lt;li&gt;provide an intuitive visual interpretation.&lt;/li&gt;
+  &lt;li&gt;be robust, relevant and generalizable&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;When looking at biologically relevant similarity metrics utilized for proteins, methods generally fall into two classes: positional distance-based and contact-based. With regards to the first class (and the more popular), positional euclidean distance-based measures require super-positioning reference atoms (selection of appropriate super positioning is also not an easy task) in Cartesian space in order to minimize the distance between shared reference points/atoms. Typically, similarity in the superimposed configurations is measured using Root Mean Square Deviation (RMSD):&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;RMSD = \sqrt{\frac{1}{n}\sum_{i=1}^{n}d^{2}_{i}}&lt;/script&gt;
+
+&lt;p&gt;where &lt;script type=&quot;math/tex&quot;&gt;d_{i}&lt;/script&gt; is the distance between two atoms in the &lt;script type=&quot;math/tex&quot;&gt;i&lt;/script&gt;-pair of all atoms &lt;script type=&quot;math/tex&quot;&gt;N&lt;/script&gt; for comparison. However, RMSD provides an average of the distances between pairs of atoms, and as such can become dominated by the most deviated fragments. Another cause for concern with RMSD is the internal symmetry of the system. With systems of high degrees of symmetry, it becomes difficult to determine unambiguous atomic-pairings between configurations as some atoms within the structure are topologically equivalent to each other. This issue continues to plague scientists studying protein similarity through alignment and RMSD similarity metrics.&lt;/p&gt;
+
+&lt;p&gt;The second class, contact-based measures serve as an alternative to avoiding super-positioning atoms. Contact-based measures are determined by overall differences between the distribution of pairwise distances from one configuration to the next, rather than distinguishing between structures by averaging the pairwise distances between the configurations. When utilizing contact-measure methods, the general protocol is to assign a contact area difference (CAD) number as a similarity ranking measure to evaluate protein structures. In method, they determine the “contact strength” of two amino acid residues &lt;script type=&quot;math/tex&quot;&gt;i&lt;/script&gt; and  &lt;script type=&quot;math/tex&quot;&gt;j&lt;/script&gt; within a protein as the overlap of van der Waals surface area of residue atoms  &lt;script type=&quot;math/tex&quot;&gt;A_{ij}&lt;/script&gt;. This is done for all pairs of residues in the protein and the stored as elements in matrix  &lt;script type=&quot;math/tex&quot;&gt;\{A\}&lt;/script&gt;. When comparing contact matrices for reference structure  &lt;script type=&quot;math/tex&quot;&gt;R&lt;/script&gt; to trial structure  &lt;script type=&quot;math/tex&quot;&gt;T&lt;/script&gt;, the elements of the difference matrix between  &lt;script type=&quot;math/tex&quot;&gt;R&lt;/script&gt; and  &lt;script type=&quot;math/tex&quot;&gt;T&lt;/script&gt; will be:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;\Delta A^{RT}_{ij} = (A_{ij}^{R} - A_{ij}^{T})&lt;/script&gt;
+
+&lt;p&gt;Thus, non-zero elements in &lt;script type=&quot;math/tex&quot;&gt;\Delta A^{RT}&lt;/script&gt; will provide information about differences between fragment &lt;script type=&quot;math/tex&quot;&gt;R&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;T&lt;/script&gt; in regards to specific residue pairs &lt;script type=&quot;math/tex&quot;&gt;i&lt;/script&gt;-&lt;script type=&quot;math/tex&quot;&gt;j&lt;/script&gt;. This representation of contact differences between fragment &lt;script type=&quot;math/tex&quot;&gt;R&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;T&lt;/script&gt; can then be represented as a single CAD number of the total unnormalized contact errors as:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;\Delta A = \sum_{i,j}|(A_{ij}^{R} - A^{T}_{ij})|&lt;/script&gt;
+
+&lt;p&gt;However, a variant to contact-based differences is Cosine-Similarity that is popular for document similarity in text analysis. Like CAD similarity measure, Cosine-Similarity measure factors in non-zero matches between the trials &lt;script type=&quot;math/tex&quot;&gt;A^{R}&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;A^{T}&lt;/script&gt; and measures the similarity between the inner product space of two vectors by determining the angle between the two vectors:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;Cosine-Similarity = \frac{A^{R} \cdot A^{T}}{||A^{R}|| ||A^{T}||}&lt;/script&gt;
+
+&lt;p&gt;where &lt;script type=&quot;math/tex&quot;&gt;A_{R}&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;A_{T}&lt;/script&gt; correspond to a reference vector and trial vector,
+ &lt;script type=&quot;math/tex&quot;&gt;{||A||}&lt;/script&gt; the euclidean norm of vector &lt;script type=&quot;math/tex&quot;&gt;A = (a^R_1, a^R_2,...,a^R_i)&lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt;||A_{T}||&lt;/script&gt; the euclidean norm of vector &lt;script type=&quot;math/tex&quot;&gt;A_{T} = (a^T_1, a^T_2,...,a^T_j)&lt;/script&gt;. Thus, as cosine-similarity computes the angle between vectors &lt;script type=&quot;math/tex&quot;&gt;A_{R}&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;A_{T}&lt;/script&gt; indicating whether the vectors are alike (cosine-distance = 1) or dissimilar (cosine-distance = 0). Thus, the closer the cosine value to 1, the smaller the cosine angle between two vectors, and the greater the match between vectors. Normalization of the Cosine-Similarity values:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;Cosine-Distance = 1-2\cos^{-1}(\frac{A^{R} \cdot A^{T}}{||A^{R}|| ||A^{T}||})&lt;/script&gt;
+
+&lt;p&gt;provides the angular similarity or Cosine-Distance functional between vectors as a distance metric between vectors that provides a more intuitive ordering of similarity from structure to structure. Thus, in the search for an appropriate similarity measure to analyze and categorize similar and dissimilar structures in an automated fashion, we have chosen to examine RMSD and Cosine-similarity distance metrics on two representative methods of chemical configurations: Cartesian- based distance matrix and Pairwise Radial Distribution Functional (PRDF)- based distance matrix.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Fingerprinting&lt;/strong&gt;
+However, the ability of similarity measure to capture the differences from structure to structure is also affected by the degrees of freedom of the chemical representation. For larger subsystems, these degrees of freedom are reduced into euclidean distance measures between arbitrarily designated center of masses. As such, we attempt to represent molecular structures as unique identifiers or ‘fingerprints’ using a intramolecular distance matrix representation and also contact-based matrix representation utilizing pairwise radial distribution functions. Using both representation, we test the ability of a general RMSD similarity measure and cosine-distance measure to rank ‘fingerprints’ in a visual representation that is intuitively interpret-able. We also present the technical python implementation for said conversion of chemically relevant Cartesian- space data structures to redundant internal coordinates as a distance-matrix representation and a pairwise radial distribution functional representation.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;PRDF&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;One method for a contact-based matrix representation is to utilize a pairwise radial distribution function (PRDF). In this case the PRDF fingerprint for a  molecular system is obtained by calculating pairwise radial atomic distribution distances that serve as structural signatures. Previous methods and implementations have already been utilized for material cartography to represent crystal structure subunits. Using this method for chemical fingerprint, it has been demonstrated to be able to (i) query large databases of materials using similarity measures, (ii) map the connectivity of materials space (i.e., as a materials cartograms) for identifying regions with unique trends/properties. The goal of this implementation is to provide an accurate method for chemical search queries for a EFP parameter database.  Here, we detail a python implementation for the derivation of a PRDF structural fingerprint for chemical system as defined in Cartesian space.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Technical Implementation&lt;/em&gt; From data science perspective, these molecules are just data structures represented as 4-dimensional arrays with inputs stored within a text file. Rows refer to instances of atoms with the  floating types of the Cartesian coordinates in the x, y, and z direction. Using this type of representation, a distance matrix can be computed in a pairwise fashion between atoms within the system. Thus, for a &lt;script type=&quot;math/tex&quot;&gt;H_{2}O&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;NH_{3}&lt;/script&gt; system shown below, a data structure would need to be initialized as a &lt;script type=&quot;math/tex&quot;&gt;N&lt;/script&gt;x&lt;script type=&quot;math/tex&quot;&gt;N&lt;/script&gt; array, where &lt;script type=&quot;math/tex&quot;&gt;N&lt;/script&gt; represents the number of atoms. Each element within that array then will contain a list of pairwise distances specific to that particular atom-atom type.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/fingerprints/waterammonia.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In our current implementation, a distance matrix is computed and used to obtain a diagonal - the greatest distance between two atoms. This diagonal is used a threshold for normalizing pairwise distances and computing the particular density for each atom type. Then, a histogram of pairwise distances for two specific types of atoms are obtained iteratively for all elements in the array. In a general sense, each element in the array is a distribution described by:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;F_{AB}(R) = \sum_{A_{i}}\sum_{B_{j}}\frac{R_{ij}}{4\pi R_{ij}^{2}(N_{A}N_{B}/V_{d})}&lt;/script&gt;
+
+&lt;p&gt;where &lt;script type=&quot;math/tex&quot;&gt;i&lt;/script&gt; iterates over all atoms &lt;script type=&quot;math/tex&quot;&gt;N_{A}&lt;/script&gt; of type &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt; within the molecular system and &lt;script type=&quot;math/tex&quot;&gt;j&lt;/script&gt; runs over all atoms &lt;script type=&quot;math/tex&quot;&gt;N_{B}&lt;/script&gt; of type &lt;script type=&quot;math/tex&quot;&gt;B&lt;/script&gt;.  &lt;script type=&quot;math/tex&quot;&gt;R_{ij}&lt;/script&gt; refers to the interatomic distance between atoms &lt;script type=&quot;math/tex&quot;&gt;i&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;j&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;V_{d}&lt;/script&gt; volume of the molecular space. &lt;script type=&quot;math/tex&quot;&gt;F_{AB}&lt;/script&gt; becomes a list of pairwise distances of type &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt;-&lt;script type=&quot;math/tex&quot;&gt;B&lt;/script&gt;. This list of pairwise distances then is accumulated into a histogram of bin size 0.05 &lt;script type=&quot;math/tex&quot;&gt;\unicode{x212B}&lt;/script&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/fingerprints/histogram_transform.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Once all of the histograms are obtained for each element in the array they are concatenated linearly to form a 2D dimensional array representing interatomic distances between pairs of atomtype (A) and (B) and the distribution of those distances. It should be noted that it is not possible to interconvert between atomic cartesian, distance matrix, and PRDF representations. This is due to the loss of information as one transforms the data from one type to the next.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/fingerprints/2prdfs.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The script to generate the cosine similarity using the PRDF representation is located &lt;a href=&quot;https://github.com/yhb8r4/PRDF_Representation/blob/master/calculate_PRDF.py&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Below gives you an idea of the improved resolution using prdf representation versus the cartesian one:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/fingerprints/val0090.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/fingerprints/val0090_visual comparison.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;</content><author><name>Terri Bui</name></author><category term="libefp" /><category term="EFPMD" /><category term="polarizable force field" /><category term="molecular dynamics" /><category term="MD" /><category term="efp method" /><category term="iSpiEFP" /><summary type="html">Classifying Molecular Configurations/Representations</summary></entry><entry><title type="html">Iowa Plots</title><link href="http://localhost:4000/iowaplots/" rel="alternate" type="text/html" title="Iowa Plots" /><published>2020-05-26T00:00:00-04:00</published><updated>2020-05-26T00:00:00-04:00</updated><id>http://localhost:4000/iowaplots</id><content type="html" xml:base="http://localhost:4000/iowaplots/">&lt;p&gt;I grew up in Kansas City and went to grad school in the midwest to study chemistry using simulation data.&lt;/p&gt;
+
+&lt;p&gt;Because I was in theory, alot of the methods we were developing required significant benchmarking of our ‘theoretical’ value to:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;experimental values&lt;/li&gt;
+  &lt;li&gt;theoretical values obtained through other historically robust methods of theory.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;In terms of the profile of our data, correlations were obtained typically through variations of basis set, molecular system size, as well as level theory.&lt;/p&gt;
+
+&lt;p&gt;Interpretation as you can imagine was very tedious as we were generally scanning over numerical data organized in tabular spreadsheets. Sometimes we were able to pick up on trends and correlation - but in the end scanning over numerical data wasn’t an efficient means of analyze.&lt;/p&gt;
+
+&lt;p&gt;Pretty quickly we attempted to utilize ‘Heat Maps’ that were a betters mean to serve as graphical representations of data that utilize color-coded levels of correlation. It became a great means of surveying large volumes of data as the eye is able to pick up contrasting shades of color much faster than numerical differentiation.&lt;/p&gt;
+
+&lt;p&gt;i.e., the darker the color the greater the associated numerical value on a continuous scale.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/iowaplots/typical_heatmap.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;However, you do lose some granularity with heatmaps are you subset the data into types - the visualization isn’t able to give insight into the frequency of occurrence that a correlation pairing might occur (this is important as you want to see how representative your dataset and how robust your average values are)!&lt;/p&gt;
+
+&lt;p&gt;A few years ago to combat this, IOWA plots were utilized to address this issue.&lt;/p&gt;
+
+&lt;p&gt;You can think of them as concatenated ‘heatmaps’ on steroids.&lt;/p&gt;
+
+&lt;p&gt;In my specific work, ended upload using IOWA plots to visualize over and underbinding types  amino acid-amino acid side-chain side-chain interactions in our SSI dataset several years back. Lori Burns, the gal who pioneered the visualization was kind enough to share source code for generation of the following plot:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/iowaplots/output_7_0.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Her code was pretty clean and utilized basic python library packages:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;pandas&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pd&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;os&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;numpy&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;hashlib&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;matplotlib&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;matplotlib.pyplot&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;matplotlib.axes&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Subplot&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Generation of the Iowa plot uses the main function plot_iowa:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;plot_iowa&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read_csv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sep&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'\s+'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;header&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;names&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'file'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'type1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'type2'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'EFP'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'CCSD'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;mclbl&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tolist&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;mcdat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;EFP&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CCSD&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tolist&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;title&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;xtitle&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;xlimit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;view&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;saveas&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'/Users/ybui/Documents/temp'&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;relpath&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;False&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;graphicsformat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'pdf'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;iowa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mcdat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mclbl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xtitle&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xtitle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xlimit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xlimit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;saveas&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;saveas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relpath&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;relpath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graphicsformat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graphicsformat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;plot_iowa reads in the spreadsheet/csv file with four columns detailing the ‘name’ of the interaction as ‘file’, the type of amino acid A and amino acid B as ‘type1’ and ‘type2’, and the obtained experimenta EFP energy value ‘EFP’ and associated benchmarking CCSD value ‘CCSD’.&lt;/p&gt;
+
+&lt;p&gt;It saves the differences between these methods as ‘mcdat’ as a list of EFP-CCSD energy differences (errors).&lt;/p&gt;
+
+&lt;p&gt;plot_iowa then assigns some configuration output flags for def iowa:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;iowa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mcdat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mclbl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xtitle&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xlimit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;2.0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;saveas&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relpath&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graphicsformat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'pdf'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]):&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;aa&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'r'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'k'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'d'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'e'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'s'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'t'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'n'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'q'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'c'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'m'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'g'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'a'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'v'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'i'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'l'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'p'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'y'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'y'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'h'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'w'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;aa_full&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'ARG'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'LYS'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'ASP'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'GLU'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'SER'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'THR'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'ASN'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'GLN'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'CYS'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'MET'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'GLY'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'ALA'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'VAL'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'ILE'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'LEU'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'PRO'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'PHE'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'TYR'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'HIE'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'TRP'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;dict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;zip&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mclbl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mcdat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;# handle for frame, overall axis
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;fig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axt&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;subplots&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;figsize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;#axt.set_xticks([])  # for quick nolabel, whiteback
+&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;#axt.set_yticks([])  # for quick nolabel, whiteback
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;axt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_xticks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;arange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;axt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_yticks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;arange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;axt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;invert_yaxis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;axt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xaxis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tick_top&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;# comment for quick nolabel, whiteback
+&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;#axt.set_xticklabels(aa, minor=False, rotation=60, size='small')  # comment for quick nolabel, whiteback
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;axt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_xticklabels&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aa_full&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rotation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;60&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'small'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;# comment for quick nolabel, whiteback
+&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;#axt.set_yticklabels(aa, minor=False, size='small')  # comment for quick nolabel, whiteback
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;axt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_yticklabels&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aa_full&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'small'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;# comment for quick nolabel, whiteback
+&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;axt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xaxis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_tick_params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;axt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;yaxis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_tick_params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;#axt.set_title('%s' % (title), fontsize=16, verticalalignment='bottom')
+&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;#axt.text(10.0, -1.5, title, horizontalalignment='center', fontsize=16)
+&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# nill spacing between 20x20 heatmaps
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;subplots_adjust&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hspace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.001&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;wspace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.001&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;index&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa1&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa2&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;cb&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;composition_tile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;matplotlib&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;axes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Subplot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;fig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;add_subplot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;heatmap&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pcolor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cb&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vmin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xlimit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vmax&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xlimit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cmap&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PRGn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_xticks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([])&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;ax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;set_yticks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([])&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;index&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;#plt.title(title)
+&lt;/span&gt;    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;posn&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;3.85&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;7.75&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;10.65&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;axt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;axvline&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;posn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;linewidth&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;color&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'k'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;axt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;axhline&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;posn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;linewidth&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;color&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'k'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;#axt.set_zorder(100)
+&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# save and show
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;pltuid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;title&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'_'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hashlib&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sha1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;title&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xlimit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;encode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'utf-8'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hexdigest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;pltfile&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expand_saveas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;saveas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pltuid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;def_prefix&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'iowa_'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relpath&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;relpath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;files_saved&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ext&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graphicsformat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;savefile&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pltfile&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'.'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;savefig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;savefile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;transparent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bbox_inches&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'tight'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;#plt.savefig(savefile, transparent=False, format=ext, bbox_inches='tight')  # for quick nolabel, whiteback
+&lt;/span&gt;        &lt;span class=&quot;n&quot;&gt;files_saved&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;savefile&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;show&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;files_saved&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;###########
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;def iowa goes through a for loop for every type of amino acid to generate a subplot by calling def composition_tile:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;xlimit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;composition_tile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;## db = dictionary of values (AA1-AA2:#) --&amp;gt; length is approximately 3362
+&lt;/span&gt;    &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;re&lt;/span&gt;
+    &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;numpy&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;
+    &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;matplotlib.pyplot&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;bfdbpattern&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;re&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;compile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'s\d\d\d([a-z])\d\d\d([a-z])\d'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;tiles&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;bfdbname&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bfdbpattern&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;match&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bfdbname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa1&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bfdbname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;or&lt;/span&gt; \
+                &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bfdbname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa1&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bfdbname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aa2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;tiles&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;val&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tiles&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;tiles&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;dim&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ceil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sqrt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tiles&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;pad&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dim&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dim&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tiles&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;tiles&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;#print np.reshape(np.array(tiles), (dim,dim))
+&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;#plt.pcolor(np.reshape(np.array(tiles), (dim,dim)), vmin=-xlimit, vmax=xlimit, cmap=plt.cm.PRGn)
+&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;#plt.colorbar()
+&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;#plt.show()
+&lt;/span&gt;    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reshape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tiles&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;before saving all the heatmaps using def expand_saveas:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;##########
+&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;expand_saveas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;saveas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;def_filename&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;def_path&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;abspath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;curdir&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;def_prefix&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relpath&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;defname&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;def_prefix&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;def_filename&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;replace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;' '&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'_'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;saveas&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;is&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;pth&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;def_path&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;fil&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;defname&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;pth&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fil&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;split&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;saveas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;pth&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pth&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pth&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;def_path&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;fil&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fil&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fil&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;defname&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;abspathfile&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;abspath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pth&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relpath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;relpath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;abspathfile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;getcwd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;abspathfile&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;go ahead and run the script, add some black bars and legends in pptx (this is not the script) to make it easier to group areas of correlation (reallly over and underbinding):&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;plot_iowa&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;small&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/iowaplots/iowa.png&quot; alt=&quot;png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;You can see the type of interaction and the number of types that specific type of interaciton occurs in the dataset in each heatmap. You also can see whether EFP over and under predicts the total energy of an interactions.&lt;/p&gt;
+
+&lt;p&gt;As such, it becomes very easy to see that with charged-charged interactions efp overpredicts and there seems to be alot more of those types of interactions so these errors need to be addressed in our theory some how in the future.&lt;/p&gt;</content><author><name>Terri Bui</name></author><category term="data wrangling" /><category term="data science" /><category term="messy data" /><summary type="html">Data Wrangling, Data Science, Messy Data</summary></entry><entry><title type="html">Data Wrangling Project</title><link href="http://localhost:4000/perceptron/" rel="alternate" type="text/html" title="Data Wrangling Project" /><published>2018-01-28T00:00:00-05:00</published><updated>2018-01-28T00:00:00-05:00</updated><id>http://localhost:4000/perceptron</id><content type="html" xml:base="http://localhost:4000/perceptron/">&lt;h1 id=&quot;h1-heading&quot;&gt;H1 Heading&lt;/h1&gt;
+
+&lt;h2 id=&quot;h2-heading&quot;&gt;H2 Heading&lt;/h2&gt;
+
+&lt;h3 id=&quot;h3-heading&quot;&gt;H3 Heading&lt;/h3&gt;
+
+&lt;p&gt;Here’s some basic text.&lt;/p&gt;
+
+&lt;p&gt;And here’s some &lt;em&gt;italics&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Here’s some &lt;strong&gt;bold&lt;/strong&gt; text.&lt;/p&gt;
+
+&lt;p&gt;What about a &lt;a href=&quot;https://github.com/dataoptimal&quot;&gt;link&lt;/a&gt;?&lt;/p&gt;
+
+&lt;p&gt;Here’s a bulleted list:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;First item&lt;/li&gt;
+  &lt;li&gt;Second item&lt;/li&gt;
+  &lt;li&gt;Third item&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Here’s a numbered list:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;First&lt;/li&gt;
+  &lt;li&gt;Second&lt;/li&gt;
+  &lt;li&gt;Third&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Python code block:&lt;/p&gt;
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;numpy&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;test_function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+      &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;z&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;R code block:&lt;/p&gt;
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;library&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tidyverse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read_csv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;some_file.csv&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Here’s some inline code &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x+y&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Here’s an image:
+&lt;img src=&quot;http://localhost:4000/images/perceptron/linsep.jpg&quot; alt=&quot;linearly separable data&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Here’s another image using Kramdown:
+&lt;img src=&quot;http://localhost:4000/images/perceptron/linsep.jpg&quot; alt=&quot;alt&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Here’s some math:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;z=x+y&lt;/script&gt;
+
+&lt;p&gt;You can also put it inline &lt;script type=&quot;math/tex&quot;&gt;z=x+y&lt;/script&gt;&lt;/p&gt;</content><author><name>Terri Bui</name></author><category term="data wrangling" /><category term="data science" /><category term="messy data" /><summary type="html">Data Wrangling, Data Science, Messy Data</summary></entry></feed>
