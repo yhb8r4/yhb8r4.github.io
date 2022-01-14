@@ -1,0 +1,19 @@
+I"	<h2 id="merck-purdue-data-mine-biometric-application">Merck-Purdue Data Mine Biometric Application</h2>
+
+<p><em>Aug 2020 – Present</em></p>
+
+<p><strong>Description:</strong> The Merck-Purdue Data Mine Biometrics team is working on creating an automated system to collect biometric data from wearable fitness technology (i.e. Fitbit and Apple devices) and integrating the data with a mental wellness survey via a mobile application. With this objective in mind, students are working towards ingesting data from multiple dummy user accounts via the biometric python active programming interface (API), creating data pipelines, cleaning and storing data in a MySQL database hosted on a Purdue Research Center for Advanced Computing (RCAC) high performance cluster (HPC) as well as AWS cloud, and developing a mobile app prototype for use during the clinical trial phase of new drug lifecycles. Holistically, objectives of this biometric project is to:</p>
+
+<p><strong>1.</strong> build a general platform capable of accessing multiple apps,
+ <strong>2.</strong> join and centralize user information – thereby automating the collection of real time information on clinical trial patients and providing new insight into the effects of drugs on physical and mental performance.</p>
+
+<p>Potentially, this project may indirectly speed up clinical trial time and cut costs due to ease of data collection for clinical trial patients with the data pipeline already set in place.  Experimentation with non-linear databases also expected.</p>
+
+<p>Students are also exposed to key practices in the Agile Framework employed by Merck including working as a scrum development team, engaging in sprint planning, writing comprehensive documentation, and retrospectively reviewing team dynamics. Specific collaboration software is used and learned by team members including Jira, Confluence, and Slack.</p>
+
+<p>Keywords: <strong>Python, Flask, React JS, R Shiny, SQL, Bash, Neo4J, AWS Cloud Solutions, Jira, Confluence, bitbucket, Atlassian, API</strong></p>
+
+<p>Video here:</p>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/dvf6L2iXbDc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+:ET
