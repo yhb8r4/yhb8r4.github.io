@@ -1,0 +1,26 @@
+I"<p>I’m still working w/ legal to figure out what I can publish on this site besides abstracts
+<strong>Note: I am still working to add more projects to this…</strong></p>
+
+<h2 id="packaging-of-formulation-specific-particle-characterization-spectral-library">Packaging of formulation-specific particle characterization spectral library</h2>
+<p><em>Mar 2021 – Present</em></p>
+
+<p><strong>Project description:</strong> Development of an omnic import library package of Raman particle characterization spectra.</p>
+
+<p>Keywords: <strong>scientific programming, python, DataSync, Raman, Omnic, AWS sagemaker</strong></p>
+
+<h2 id="preformulation-preliminary-ssr-application">Preformulation Preliminary SSR Application</h2>
+<p><em>Feb 2021 – Present</em></p>
+
+<p>Project descriptionCompliance requirements for data capture within ELN, require a multi-step process of initial authorship followed by secondary scientist review (SSR). Often, this process is iterative and spans several electronic lab notebooks notebooks (ELNs), processed attachments, and raw instrument data that was created several years back. Hence, the opportunity to streamline the process of machine-aided congruency between documents prior SSR is highly desired.</p>
+
+<p>Here I worked on the development of an automated tool that can aid scientist in the SSR review process of ELN documentations and technical reports in the form of a interactive web-based interface that is capable of ingesting multiple ELN attachment template that can check for congruency prior to the initial SSR process.</p>
+
+<p>keywords: <strong>SageMaker, EC2, S3, AWS, python</strong></p>
+
+<h2 id="drug-product-substance-dps-batch-automated-processing-of-lai-in-vivo-dataset">Drug Product Substance (DPS) Batch Automated Processing of LAI In Vivo Dataset</h2>
+<p><em>Jan 2021 – Present</em></p>
+
+<p><strong>Project description:</strong> Batch processing of In Vivo excel spreadsheets via ETL pipeline.</p>
+
+<p>Keywords: <strong>Excel, Sharepoint, Lambda, python, AWS DataSync, scientific programming</strong></p>
+:ET

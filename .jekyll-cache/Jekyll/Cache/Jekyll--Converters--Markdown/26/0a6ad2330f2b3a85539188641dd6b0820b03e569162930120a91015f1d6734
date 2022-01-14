@@ -1,0 +1,139 @@
+I"6<p><strong>Note: I am still working on this…</strong></p>
+
+<h2 id="merck-purdue-data-mine-collab-where-do-the-undergrads-go">Merck-Purdue Data Mine Collab: Where do the undergrads go?”</h2>
+<p><strong>2022 - Purdue Industrial Math and Stat Seminar</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Presenter</th>
+      <th>Title</th>
+      <th>Affilation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Terri Bui, PhD</td>
+      <td>Data Science &amp; Informatics – Merck Research Labs</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Description:</p>
+
+<p>As big data and analytics are being adopted across industries – Merck is also following suit. Here we present a method of engagement for academia and industry developing agile solutions and platforms to expedite the integration of data science into pharmaceutical sciences. In this engagement, students and Merck researchers collaborate by exploring technologies pertinent to big-data strategies that will enable data-driven research decisions through the development, design, and implementation of:</p>
+
+<ol>
+  <li>a biometric workflow and integration platform</li>
+  <li>radio-frequency (RFID) software solution</li>
+  <li>natural language processing (NLP) on scientific text;</li>
+</ol>
+
+<p>While these technologies have been readily adopted in other industries, their usage within the clinical and pharmaceutical research and development sector is still being explored from a compliance and integration perspective. Thus, the value provided in utilizing Merck-Purdue model of engagement by exploring new libraries and packages within the framework of general industrial ‘use cases’ can serve as preliminary ‘data’ for early adoption and operationalization.</p>
+
+<p>Future works involve expanded areas of research within MRL and Purdue Faculty involvement.</p>
+
+<h2 id="data-science-and-statistics-in-pharmaceutical-engineering-and-experimental-studies-where-is-it-where-is-it-going">Data Science and Statistics in Pharmaceutical Engineering and Experimental Studies: Where is it, where is it going?</h2>
+
+<p><strong>2021 Joint Statistical Meetings (JSM) - Physical and Engineering Sciences -  Pharmaceutical Research and Manufacturers of America</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Panel</th>
+      <th>Title</th>
+      <th>Affiliation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Stan Altan, PhD</td>
+      <td>Sr. Director &amp; Fellow</td>
+      <td>Johnson &amp; Johnson</td>
+    </tr>
+    <tr>
+      <td>Mark Daniel Ward, PhD</td>
+      <td>Prof. of Statistics and (by courtesy) of Mathematics and Public Health</td>
+      <td>Purdue University</td>
+    </tr>
+    <tr>
+      <td>Terri Bui, PhD</td>
+      <td>Sr. Scientist</td>
+      <td>Merck &amp; Co.,</td>
+    </tr>
+    <tr>
+      <td>Ke Wang, PhD</td>
+      <td>Director</td>
+      <td>Pfizer Inc.</td>
+    </tr>
+    <tr>
+      <td>Jonathan E. Allen, PhD</td>
+      <td>Principal Investigator</td>
+      <td>Lawerence Livermore National Laboratory</td>
+    </tr>
+    <tr>
+      <td>Huanyu Zhou, PhD</td>
+      <td>Sr. Director</td>
+      <td>Teva Pharmaceuticals</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Data Science (DS) as a discipline seeks to bring new intensive algorithmic, data-driven approaches and insights. DS can increase scientific understanding and can elucidate essential relationships from large, complex, structured or unstructured data. The tools of DS are highly computational.</p>
+
+<p>Students who learn DS need to go beyond traditional statistical approaches and design of experiment principles. In pharmaceutical engineering and research, large datasets are found throughout the drug discovery and development process, in both clinical and non-clinical studies. Research at the boundary of Statistics, DS, and Pharmaceutical Engineering is a fertile area for the application of DS approaches, related to Artificial Intelligence, Machine Learning, Computational Statistics, and related methodologies. Standard traditional statistical approaches are giving way to these newer methods. Consequently important questions arise regarding the respective roles of Statistics and DS, with emphasis on statistical engineering and experimental studies in the CMC and other areas.</p>
+
+<p>The invited panel consisted of 5 panelists who are experienced data science practitioners discussing the following questions:</p>
+
+<ol>
+  <li>What is DS, and how does it differ from traditional statistics?</li>
+  <li>What are the appropriate roles of DS and Statistics in furthering a deeper understanding of Pharmaceutical Science and Engineering?</li>
+  <li>What are the hurdles preventing the Pharmaceutical Sciences from utilizing data science tools?</li>
+  <li>How can we improve the communication and collaboration capabilities, between Pharmaceutical domain experts and DS/Statistics colleagues?</li>
+  <li>Where will we be 10 years hence?</li>
+</ol>
+
+<h2 id="title-integrating-data-science-and-statistics-in-pharmaceutical-statistical-engineering-and-research">Title: Integrating Data Science and Statistics in Pharmaceutical Statistical Engineering and Research</h2>
+
+<p><em>JSM 2020: Joint Statistical Meetings 2020 - Physical and Engineering Sciences</em></p>
+
+<p>Type: Panel</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Presenter</th>
+      <th>Affilation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Stan Altan (Presenting)</td>
+      <td>Johnson &amp; Johnson</td>
+    </tr>
+    <tr>
+      <td>Brad Evans</td>
+      <td>Pfizer</td>
+    </tr>
+    <tr>
+      <td>Terri Bui</td>
+      <td>Merck &amp; Co., Inc</td>
+    </tr>
+    <tr>
+      <td>Mark Ward</td>
+      <td>Purdue University</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Abstract:
+Data Science (DS) as a discipline seeks to bring new approaches to further scientific understanding and elucidate essential relationships with an emphasis on “large” datasets. The tools of DS are highly computational and do not follow traditional statistical approaches. In pharmaceutical engineering and research, large datasets are found throughout the drug development process, in both clinical and nonclinical studies. Therefore these represent fertile areas for the application of DS approaches, related to AI, ML and others. Standard traditional statistical approaches are giving way to these newer methods, and consequently important questions arise regarding the respective roles of Statistics and DS. This round table seeks to bring together individuals from both disciplines to discuss the following questions among others:</p>
+
+<ol>
+  <li>What is DS, how does it different from statistics?</li>
+  <li>What are the appropriate roles of DS and Statistics in furthering better understanding of pharmaceutical scientific and engineering studies?</li>
+  <li>What are the hurdles preventing the Pharmaceutical Sciences from utilizing data science tools?</li>
+  <li>How does one build a business case for DS approaches?</li>
+</ol>
+:ET
