@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2022-01-13T21:19:11-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">The Data Janitor</title><subtitle>Sr. Scientist &lt;br /&gt;  Data Science and Informatics &lt;br /&gt; Merck Research Labs (MRL)</subtitle><author><name>Terri Bui, PhD</name><email>yen.bui@merck.com</email></author><entry><title type="html">EFPMC: A Monte Carlo implementation with the EFP Method</title><link href="http://localhost:4000/EFPMC/" rel="alternate" type="text/html" title="EFPMC: A Monte Carlo implementation with the EFP Method" /><published>2020-06-07T00:00:00-04:00</published><updated>2020-06-07T00:00:00-04:00</updated><id>http://localhost:4000/EFPMC</id><content type="html" xml:base="http://localhost:4000/EFPMC/"><![CDATA[<p>When I was apart of a theoretical group, we pride ourselves on being on the frontier of chemistry studying interactions between matter in it’s purest form – mathematically (and I guess programmatically).</p>
+
+<p>However – we also needed to get funding so we had to tackle use cases to apply our theory. One of those use cases involved understanding the effect of cofactors on co-crystal formulations for active pharmaceutical ingredients. However, performing an exhaustive experimental screening is experimentally expensive. Thus, there is a need for a tool that is relatively accurate yet computationally cost effective for the virtual screening of drugs based on changes in functional group interaction energies in order to approximate free energy changes. My particular contribution was implementing of the Monte-Carlo method and perform some simple benchmarking studies for this particular use case.</p>
+
+<p><strong>Monte-Carlo Sampling</strong></p>
+
+<p>Whelp.</p>
+
+<p>Here goes the technical implementation of a Monte-Carlo integration over configuration space using the effective fragment potential (EFP) method as a description for a chemical system. Using the effective fragment potential method, is possible to calculate energetic properties of any substance of a system of \(N\) interacting EFP fragments:</p>
+
+\[E^{EFP}=E_{coul}+E_{ind}+E_{exch}+E_{disp}+(E_{CT})\]
+
+<p>In order to explore the configurational space, random sampling of points are obtained through moving each EFP fragments from an initial configuration in succession:</p>
+
+\[x = x + \alpha\xi_{x}\]
+
+\[y = y + \alpha\xi_{y}\]
+
+\[z = z + \alpha\xi_{z}\]
+
+\[a = a + \alpha\xi_{a}\]
+
+\[b = b + \alpha\xi_{b}\]
+
+\[c = c + \alpha\xi_{c}\]
+
+<p>where \(\alpha\) is the maximum allowed displacement, and \(\xi_{x}\), \(\xi_{y}\), \(\xi_{z}\), \(\xi_{a}\), \(\xi_{b}\), \(\xi_{c}\) are random numbers between (-1) and 1. \(x\), \(y\), and \(z\) refer to the Cartesian coordinates for the center of mass of a fragment. \(a\), \(b\), and \(c\) refer the fragment’s Euler angles. The change in energy of the system \(\Delta E\) following the move is calculated. If \(\Delta E &gt; 0\), then the move is evaluated against probability of \(exp(\Delta E/kT))\) where a random number  \(\xi_{4}\) between 0 and 1 is evaluated against \(exp(\Delta E/kT))\). If \(\xi_{4}\ &lt; exp(\Delta E/kT))\), then the system configuration is accepted despite \(\Delta E &gt; 0\). However if \(\xi_{4}\ &gt; exp(\Delta E/kT))\), then the move is rejected and the system is returned to its prior configuration.</p>
+
+<p><strong>Technical Implementation</strong></p>
+
+<p>The general EFP method has been implemented as a library API called <a href="https://github.com/ilyak/libefpl">libefp</a>.  The libefp library and efpmd integration program are written in fully portable standard C language and parallelized using OpenMP. Here we describe some brief additional functions to efpmd program that serves as the integrator for a Monte-Carlo simulation with the EFP method. You can find a branch of the efpmd-mc implementation at my branch <a href="https://github.com/yhb8r4/libefp">libefp_Terri</a>.</p>
+
+<p>Here is a general scheme of my modification to the source code:</p>
+
+<p><img src="/images/efpmd_mc/mc_software.png" alt="png" /></p>
+
+<p>In order to perform Monte-Carlo using the EFP method, a new subroutine sim_mc() was introduced and linked to the efpmd program. The simulation configurations for performing a EFP-MC calculations, involve the run_type flag introduced as ‘run_type mc’ and max_step and temp general parameters for the simulation. Similarly to other run_types in efpmd, sim_mc() is initialized in its own header file (mc.h) and declared in mc.c, both located in the ~/efpmd/src/ directory. sim_mc includes/calls on other functions in the efpmd program through header files math.h, common.h, and rand.h. Running a EFP-MC related parameters that control the step size are:</p>
+
+<ul>
+  <li>Max Displacement Step Size: dismag_threshold [default = 0.05]</li>
+  <li>Update Displacement Step Size: dismag_modifier [default = 0.95]</li>
+  <li>Frequency of Updating Displacement: dismag_modify_steps [default = 100]</li>
+</ul>
+
+<p>System information is parsed and stored in struct mc_state in the void mc_create. It is within mc_state that the initial configuration for the original configuration is accessible. Mc_state also contains a dynamic array for proposed configuration x_prop that is updated at each step of the simulation.  Enum mc_init is the function that allocates the memory for mc_state, along with initializing the Monte-Carlo step counter ‘step’, the initial accepted step n_accept and rejected steps n_reject.</p>
+
+<p>Accessory functions such mc_set_func() and mc_set_user_data() are provided in order to transfer data structures and simulation configuration information populated within the initial main() function in main.c to data structures within sim_mc(). Sim_mc which is able to communicate with the library function libefp through subroutine check_fail() that passes the atomic coordinate and point charge coordinate information for each fragment.</p>
+
+<p>When running a Monte-Carlo simulation, sim_mc calls on mc_step() multiple times in a while loop for the number of max_steps the user specifies. At each step, mc_rand() is called to randomize the center of mass (COM) of one fragment in the simulation. The energy of the state is obtained through compute_efp() that calls on libefp function efp_compute() through compute_energy(). With each Monte-Carlo step, evaluation of the move is done through check_acceptance(). If the move is accepted, the proposed coordinates stored in struct x_prop will be copied to struct x. Else, another step is taken and the proposed configuration is evaluated.</p>
+
+<p><strong>S22 Dataset</strong></p>
+
+<p>In order to examine the robust of the Monte-Carlo code it was necessary to examine the ability of the program to sample different phase space of different systems. Previous efp parameters generated for the S22 dataset are readily available through the libefp package. The Coulomb part of these parameters was obtained with analytic Stone DMA, using HF/6-31+G(d)(42-44) and HF/6-31G(d) for nonaromatic and aromatic molecules, respectively. The rest of the potential, that is, static and dynamic polarizability tensors, wave function, Fock matrix, etc., were obtained with the 6-311++G(3df,2p) basis set.(44-46) To account for the short-range charge-penetration effects, overlap-based electrostatic and dispersion screenings as well as Gaussian-like polarization screening were employed.</p>
+
+<p><em>Finding the potential minima from an optimized geometry</em></p>
+
+<p><img src="/images/efpmd_mc/ccsdstructures.png" alt="png" /></p>
+
+<p>S22 is a data set of dimer complexes are divided into three subgroups: (i) hydrogen bonded complexes; (ii) complexes with predominant dispersion stabilization; (iii) mixed complexes in which electrostatic and dispersion contributions that are similar in magnitude.  Of the 22  complexes, 6 of the dimers were optimized at the CCSD(T) level in cc-pVTZ and cc-pVQZ basis sets, and so were selected as initial configurations.</p>
+
+<p>Each configuration served as the initial step, for an EFP-MC simulation with 10,000. Each simulation was run with a displacement maximum threshold of 0.05 and displacement modifier of 0.95 utilized ever 500 steps. After the simulation, the configuration with the lowest energy was obtained for each dimer and geometry optimized using efpmd. The geometry optimized structure following Monte-Carlo simulation (EFP MC_Opt) was then compared against a EFP geometry optimized structure (EFP Opt) and the initial CCSD(T) structure itself (CCSD Opt).</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Complex</th>
+      <th>EFP MC</th>
+      <th>EFP MC_Opt</th>
+      <th>EFP Opt</th>
+      <th>CCSD Opt</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ammonia</td>
+      <td>-4.72</td>
+      <td>-5.37</td>
+      <td>-5.37</td>
+      <td>-3.17</td>
+    </tr>
+    <tr>
+      <td>ethene</td>
+      <td>-2.70</td>
+      <td>-3.16</td>
+      <td>-3.16</td>
+      <td>-1.51</td>
+    </tr>
+    <tr>
+      <td>ethene-ethyne</td>
+      <td>-1.92</td>
+      <td>-2.32</td>
+      <td>-2.32</td>
+      <td>-1.53</td>
+    </tr>
+    <tr>
+      <td>formic acid</td>
+      <td>-980.38</td>
+      <td>-16.65</td>
+      <td>-16.65</td>
+      <td>-18.61</td>
+    </tr>
+    <tr>
+      <td>methane</td>
+      <td>-0.92</td>
+      <td>-1.04</td>
+      <td>-1.04</td>
+      <td>-0.53</td>
+    </tr>
+    <tr>
+      <td>water</td>
+      <td>-5.90</td>
+      <td>-5.99</td>
+      <td>-5.99</td>
+      <td>-5.02</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Using the Monte-Carlo method with EFP would likely find a non-equilibrium configuration close to one of the local EFP minima. Optimization of that non-equilibrium configuration, would result in finding this local EFP minimum. EFP-MC values for the lowest energy minima using a geometry optimized EFP-MC (EFP MC_Opt), EFP-MC (EFP MC), EFP optimized structure (EFP Opt), and CCSD(T) initial reference structure (CCSD Opt).</p>
+
+<p><em>Finding Potential Minima From Non-equilibrium Geometries</em>
+Rather than focus on finding a single minima/stationary point, it was important to see if the Monte-Carlo algorithm in conjunction with EFP would be able to explore and find local minima beyond the minima obtained through geometry optimization. Thus, the EFP parameters for 6 dimer complex from the S22 dataset were once more utilized. However, the initial configurations were not the obtained CCSD(T) geometry optimized structures, but were randomly placed twice the original intermolecular distance apart. These geometries were obtained from the S22 non-equilibrium geometries . For each dimer complex, a Monte-Carlo simulation was run for 10,000 steps, displacement maximum threshold of 0.05 and displacement modifier of 0.95 utilized ever 500 steps. After the simulation, the configuration with the lowest energy was obtained for each dimer and geometry optimized using efpmd. The geometry optimized structure following Monte-Carlo simulation was then compared against a reference efpmd geometry optimized starting from the 10 angstrom apart dimer structure.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Complex</th>
+      <th>EFP MC_Opt</th>
+      <th>EFP Opt</th>
+      <th>CCSD Opt</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ammonia</td>
+      <td>-</td>
+      <td>-1.67</td>
+      <td>-0.36</td>
+    </tr>
+    <tr>
+      <td>ethene</td>
+      <td>-1.86</td>
+      <td>-3.15</td>
+      <td>-0.03</td>
+    </tr>
+    <tr>
+      <td>ethene-ethyne</td>
+      <td>-1.55</td>
+      <td>-1.54</td>
+      <td>-0.15</td>
+    </tr>
+    <tr>
+      <td>formic acid</td>
+      <td>-16.61</td>
+      <td>-16.61</td>
+      <td>-3.63</td>
+    </tr>
+    <tr>
+      <td>methane</td>
+      <td>-1.03</td>
+      <td>-1.03</td>
+      <td>-0.01</td>
+    </tr>
+    <tr>
+      <td>water</td>
+      <td>-7.07</td>
+      <td>-5.71</td>
+      <td>-0.96</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>In the Table above we see that EFP using Monte-Carlo was able to obtain different minima (EFP MC_Opt vs. EFP Opt) rather than just falling into the original geometry optimized minima presented  - implying that the system was able to overcome energy barriers and explore different potential energy minima. With Ammonia, we were not able to obtain a optimizable local minima using the same simulation with Monte-Carlo and so is not provided in this table. The ability to EFP-MC explore potential minima was encouraging and thus we attempted to find local stationary points on well established potential energy surfaces of a water dimer.</p>
+
+<p><em>Water Dimer Local Minima</em></p>
+
+<p><img src="/images/efpmd_mc/water_dimer_stationary.png" alt="png" /></p>
+
+<p>Here, the water dimer configuration obtained from S22 non-equilibrium dimer configuration served as the initial step. The simulation was ran with 10,000 steps using efpmd with a displacement maximum threshold of 0.05 and displacement modifier of 0.95 utilized ever 500 steps with periodic conditions of 10 Angstrom. After the simulation, each Monte-Carlo step was then geometry optimized using efpmd. The initial Monte-Carlo obtained configurations are depicted in the figure below as energetic states distinguishable by intermolecular distance (without periodic boundary conditions applied). Although, the obtained energies are obtained with periodic boundary conditions, it was easier to distinguish individual states with respect to their coordinates without PBC in order to ‘smear’ the density of points and see energy groupings.</p>
+
+<p><img src="/images/efpmd_mc/water_dimer_mc_initial.png" alt="png" /></p>
+
+<p><img src="/images/efpmd_mc/water_dimer_opt.png" alt="png" /></p>
+
+<p>When looking at the obtained energy states  from the initial configurations, we see a reduction in the number configurations and it is easy to ascertain that there are approximately 3 ‘lines’ or minima of a water dimer. From these configurations, the 3 final configurations found correspond to the linear (I), cyclic (II), and bifurcated (III) CI potential minima by Matsoka et. all. EFP energies and CI literature energies are reported as:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Configuration</th>
+      <th>EFP</th>
+      <th>CI</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Linear</td>
+      <td>-5.98</td>
+      <td>-5.6</td>
+    </tr>
+    <tr>
+      <td>Cyclic</td>
+      <td>-7.08</td>
+      <td>-4.9</td>
+    </tr>
+    <tr>
+      <td>Bifurcated</td>
+      <td>-5.72</td>
+      <td>-4.2</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><img src="/images/efpmd_mc/efpvsci.png" alt="png" /></p>
+
+<p>This is a promising result that EFP is able to minimally obtain previously cited local minimum obtained using CI methods.</p>
+
+<p><strong>Conclusions</strong></p>
+
+<p>The theoretical and technical implementation of the Monte-Carlo method in the libefp package is reported. Benchmark studies on the ability of EFP-MC to appropriately phase-space sample relative to both CCSD(T) geometry optimized equilibrium and non-equilibrium geometries on the S22 dataset are reported. The configurations obtained and presented here are in good agreement with those obtained using accurate first principles methods as demonstrated by finding the linear, cyclic, and bifurcated structures with comparable energetics. These results demonstrate EFP-MC as method for obtaining local and global minima on a potential energy surface of a molecular model. Thus, this work serves as a promising means to perform co-crystal screening with EFP-MC as a sophisticated alternative to docking methods.</p>]]></content><author><name>Terri Bui, PhD</name><email>yen.bui@merck.com</email></author><category term="libefp" /><category term="EFPMD" /><category term="polarizable force field" /><category term="molecular dynamics" /><category term="MD" /><category term="efp method" /><summary type="html"><![CDATA[Overcoming Energy Barriers]]></summary></entry><entry><title type="html">Molecular Fingerprints: Implementation of a pairwise distribution based molecular representation</title><link href="http://localhost:4000/similarity_measures/" rel="alternate" type="text/html" title="Molecular Fingerprints: Implementation of a pairwise distribution based molecular representation" /><published>2020-06-07T00:00:00-04:00</published><updated>2020-06-07T00:00:00-04:00</updated><id>http://localhost:4000/similarity_measures</id><content type="html" xml:base="http://localhost:4000/similarity_measures/"><![CDATA[<p>I love benchmarks.</p>
+
+<p>I love understanding how well new methods and protocol perform against previous methods (because this is the easiest way to measure how innovative your formalisms, architecture, and technologies are).</p>
+
+<p>However, determining the robustness of a method against other methods is usually closer to the ‘downstream’ or final stages of a workbench simulation process investigating dynamical properties of a molecular system. The precursor to any sort of benchmarking or validation of a method on a particular model involves analysis of the system with respect to its varying parameters. With the case of our benchmarking and phase-space sampling studies, molecular configuration and orientation should be closely analyzed. Thus, for our large sets of data, this involves utilizing automated and robust structure comparison methods in order to assess the robustness of a set of configurations by assigning some sort of quantitative value through the use of a similarity metric.</p>
+
+<p>Ideally, a similarity measure should be able to:</p>
+<ul>
+  <li>provide an index value that ranks
+structures/configurations of a molecular system based on their similarity with a minimal overlap - providing a high degree of resolution between clusters of structures.</li>
+  <li>provide an intuitive visual interpretation.</li>
+  <li>be robust, relevant and generalizable</li>
+</ul>
+
+<p>When looking at biologically relevant similarity metrics utilized for proteins, methods generally fall into two classes: positional distance-based and contact-based. With regards to the first class (and the more popular), positional euclidean distance-based measures require super-positioning reference atoms (selection of appropriate super positioning is also not an easy task) in Cartesian space in order to minimize the distance between shared reference points/atoms. Typically, similarity in the superimposed configurations is measured using Root Mean Square Deviation (RMSD):</p>
+
+\[RMSD = \sqrt{\frac{1}{n}\sum_{i=1}^{n}d^{2}_{i}}\]
+
+<p>where \(d_{i}\) is the distance between two atoms in the \(i\)-pair of all atoms \(N\) for comparison. However, RMSD provides an average of the distances between pairs of atoms, and as such can become dominated by the most deviated fragments. Another cause for concern with RMSD is the internal symmetry of the system. With systems of high degrees of symmetry, it becomes difficult to determine unambiguous atomic-pairings between configurations as some atoms within the structure are topologically equivalent to each other. This issue continues to plague scientists studying protein similarity through alignment and RMSD similarity metrics.</p>
+
+<p>The second class, contact-based measures serve as an alternative to avoiding super-positioning atoms. Contact-based measures are determined by overall differences between the distribution of pairwise distances from one configuration to the next, rather than distinguishing between structures by averaging the pairwise distances between the configurations. When utilizing contact-measure methods, the general protocol is to assign a contact area difference (CAD) number as a similarity ranking measure to evaluate protein structures. In method, they determine the “contact strength” of two amino acid residues \(i\) and  \(j\) within a protein as the overlap of van der Waals surface area of residue atoms  \(A_{ij}\). This is done for all pairs of residues in the protein and the stored as elements in matrix  \(\{A\}\). When comparing contact matrices for reference structure  \(R\) to trial structure  \(T\), the elements of the difference matrix between  \(R\) and  \(T\) will be:</p>
+
+\[\Delta A^{RT}_{ij} = (A_{ij}^{R} - A_{ij}^{T})\]
+
+<p>Thus, non-zero elements in \(\Delta A^{RT}\) will provide information about differences between fragment \(R\) and \(T\) in regards to specific residue pairs \(i\)-\(j\). This representation of contact differences between fragment \(R\) and \(T\) can then be represented as a single CAD number of the total unnormalized contact errors as:</p>
+
+\[\Delta A = \sum_{i,j}|(A_{ij}^{R} - A^{T}_{ij})|\]
+
+<p>However, a variant to contact-based differences is Cosine-Similarity that is popular for document similarity in text analysis. Like CAD similarity measure, Cosine-Similarity measure factors in non-zero matches between the trials \(A^{R}\) and \(A^{T}\) and measures the similarity between the inner product space of two vectors by determining the angle between the two vectors:</p>
+
+\[Cosine-Similarity = \frac{A^{R} \cdot A^{T}}{||A^{R}|| ||A^{T}||}\]
+
+<p>where \(A_{R}\) and \(A_{T}\) correspond to a reference vector and trial vector,
+ \({||A||}\) the euclidean norm of vector \(A = (a^R_1, a^R_2,...,a^R_i)\), \(||A_{T}||\) the euclidean norm of vector \(A_{T} = (a^T_1, a^T_2,...,a^T_j)\). Thus, as cosine-similarity computes the angle between vectors \(A_{R}\) and \(A_{T}\) indicating whether the vectors are alike (cosine-distance = 1) or dissimilar (cosine-distance = 0). Thus, the closer the cosine value to 1, the smaller the cosine angle between two vectors, and the greater the match between vectors. Normalization of the Cosine-Similarity values:</p>
+
+\[Cosine-Distance = 1-2\cos^{-1}(\frac{A^{R} \cdot A^{T}}{||A^{R}|| ||A^{T}||})\]
+
+<p>provides the angular similarity or Cosine-Distance functional between vectors as a distance metric between vectors that provides a more intuitive ordering of similarity from structure to structure. Thus, in the search for an appropriate similarity measure to analyze and categorize similar and dissimilar structures in an automated fashion, we have chosen to examine RMSD and Cosine-similarity distance metrics on two representative methods of chemical configurations: Cartesian- based distance matrix and Pairwise Radial Distribution Functional (PRDF)- based distance matrix.</p>
+
+<p><strong>Fingerprinting</strong>
+However, the ability of similarity measure to capture the differences from structure to structure is also affected by the degrees of freedom of the chemical representation. For larger subsystems, these degrees of freedom are reduced into euclidean distance measures between arbitrarily designated center of masses. As such, we attempt to represent molecular structures as unique identifiers or ‘fingerprints’ using a intramolecular distance matrix representation and also contact-based matrix representation utilizing pairwise radial distribution functions. Using both representation, we test the ability of a general RMSD similarity measure and cosine-distance measure to rank ‘fingerprints’ in a visual representation that is intuitively interpret-able. We also present the technical python implementation for said conversion of chemically relevant Cartesian- space data structures to redundant internal coordinates as a distance-matrix representation and a pairwise radial distribution functional representation.</p>
+
+<p><em>PRDF</em></p>
+
+<p>One method for a contact-based matrix representation is to utilize a pairwise radial distribution function (PRDF). In this case the PRDF fingerprint for a  molecular system is obtained by calculating pairwise radial atomic distribution distances that serve as structural signatures. Previous methods and implementations have already been utilized for material cartography to represent crystal structure subunits. Using this method for chemical fingerprint, it has been demonstrated to be able to (i) query large databases of materials using similarity measures, (ii) map the connectivity of materials space (i.e., as a materials cartograms) for identifying regions with unique trends/properties. The goal of this implementation is to provide an accurate method for chemical search queries for a EFP parameter database.  Here, we detail a python implementation for the derivation of a PRDF structural fingerprint for chemical system as defined in Cartesian space.</p>
+
+<p><em>Technical Implementation</em> From data science perspective, these molecules are just data structures represented as 4-dimensional arrays with inputs stored within a text file. Rows refer to instances of atoms with the  floating types of the Cartesian coordinates in the x, y, and z direction. Using this type of representation, a distance matrix can be computed in a pairwise fashion between atoms within the system. Thus, for a \(H_{2}O\) and \(NH_{3}\) system shown below, a data structure would need to be initialized as a \(N\)x\(N\) array, where \(N\) represents the number of atoms. Each element within that array then will contain a list of pairwise distances specific to that particular atom-atom type.</p>
+
+<p><img src="/images/fingerprints/waterammonia.png" alt="png" /></p>
+
+<p>In our current implementation, a distance matrix is computed and used to obtain a diagonal - the greatest distance between two atoms. This diagonal is used a threshold for normalizing pairwise distances and computing the particular density for each atom type. Then, a histogram of pairwise distances for two specific types of atoms are obtained iteratively for all elements in the array. In a general sense, each element in the array is a distribution described by:</p>
+
+\[F_{AB}(R) = \sum_{A_{i}}\sum_{B_{j}}\frac{R_{ij}}{4\pi R_{ij}^{2}(N_{A}N_{B}/V_{d})}\]
+
+<p>where \(i\) iterates over all atoms \(N_{A}\) of type \(A\) within the molecular system and \(j\) runs over all atoms \(N_{B}\) of type \(B\).  \(R_{ij}\) refers to the interatomic distance between atoms \(i\) and \(j\) and \(V_{d}\) volume of the molecular space. \(F_{AB}\) becomes a list of pairwise distances of type \(A\)-\(B\). This list of pairwise distances then is accumulated into a histogram of bin size 0.05 \(\unicode{x212B}\).</p>
+
+<p><img src="/images/fingerprints/histogram_transform.png" alt="png" /></p>
+
+<p>Once all of the histograms are obtained for each element in the array they are concatenated linearly to form a 2D dimensional array representing interatomic distances between pairs of atomtype (A) and (B) and the distribution of those distances. It should be noted that it is not possible to interconvert between atomic cartesian, distance matrix, and PRDF representations. This is due to the loss of information as one transforms the data from one type to the next.</p>
+
+<p><img src="/images/fingerprints/2prdfs.png" alt="png" /></p>
+
+<p>The script to generate the cosine similarity using the PRDF representation is located <a href="https://github.com/yhb8r4/PRDF_Representation/blob/master/calculate_PRDF.py">here</a>.</p>
+
+<p>Below gives you an idea of the improved resolution using prdf representation versus the cartesian one:</p>
+
+<p><img src="/images/fingerprints/val0090.png" alt="png" /></p>
+
+<p><img src="/images/fingerprints/val0090_visual comparison.png" alt="png" /></p>]]></content><author><name>Terri Bui, PhD</name><email>yen.bui@merck.com</email></author><category term="libefp" /><category term="EFPMD" /><category term="polarizable force field" /><category term="molecular dynamics" /><category term="MD" /><category term="efp method" /><category term="iSpiEFP" /><summary type="html"><![CDATA[Classifying Molecular Configurations/Representations]]></summary></entry><entry><title type="html">Iowa Plots</title><link href="http://localhost:4000/iowaplots/" rel="alternate" type="text/html" title="Iowa Plots" /><published>2020-05-26T00:00:00-04:00</published><updated>2020-05-26T00:00:00-04:00</updated><id>http://localhost:4000/iowaplots</id><content type="html" xml:base="http://localhost:4000/iowaplots/"><![CDATA[<p>While I was at Purdue, my field of student was computational chemistry. However, my specialization was in theory (scientific programming). This meant that alot of the methods we were developing required significant benchmarking of our ‘theoretical’ value to:</p>
+
+<ol>
+  <li>experimental values</li>
+  <li>theoretical values obtained through other historically robust methods of theory.</li>
+</ol>
+
+<p>In terms of the profile of our data, correlations were obtained typically through variations of basis set, molecular system size, as well as level theory.</p>
+
+<p>Analysis followed byInterpretation, as you can imagine, was very tedious as we would have to continuously scan over numerical data organized in tabular spreadsheets. The volume and complexity of the data make it difficult to pick up on trends and correlation. Because let’s be honest, scanning over millions of rows of numerical data is not an efficient means of analyze.</p>
+
+<p>Pretty quickly we attempted to utilize ‘Heat Maps’ that were a betters mean to serve as graphical representations of data that utilize color-coded levels of correlation. It became a great means of surveying large volumes of data as the eye is able to pick up contrasting shades of color much faster than numerical differentiation.</p>
+
+<p>i.e., the darker the color the greater the associated numerical value on a continuous scale.</p>
+
+<p><img src="/images/iowaplots/typical_heatmap.png" alt="png" /></p>
+
+<p>However, you do lose some granularity with heatmaps are you subset the data into types - the visualization isn’t able to give insight into the frequency of occurrence that a correlation pairing might occur (this is important as you want to see how representative your dataset and how robust your average values are)!</p>
+
+<p>A few years ago to combat this, IOWA plots were utilized to address this issue.</p>
+
+<p>You can think of them as concatenated ‘heatmaps’ on steroids.</p>
+
+<p>In my specific work, ended upload using IOWA plots to visualize over and underbinding types  amino acid-amino acid side-chain side-chain interactions in our SSI dataset several years back. Lori Burns, the gal who pioneered the visualization was kind enough to share source code for generation of the following plot:</p>
+
+<p><img src="/images/iowaplots/output_7_0.png" alt="png" /></p>
+
+<p>Her code was pretty clean and utilized basic python library packages:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.axes</span> <span class="kn">import</span> <span class="n">Subplot</span>
+
+</code></pre></div></div>
+
+<p>Generation of the Iowa plot uses the main function plot_iowa:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">def</span> <span class="nf">plot_iowa</span> <span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s">'\s+'</span><span class="p">,</span><span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s">'file'</span><span class="p">,</span><span class="s">'type1'</span><span class="p">,</span><span class="s">'type2'</span><span class="p">,</span><span class="s">'EFP'</span><span class="p">,</span><span class="s">'CCSD'</span><span class="p">])</span>
+    <span class="n">mclbl</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="nb">file</span><span class="p">).</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">mcdat</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">EFP</span> <span class="o">-</span> <span class="n">data</span><span class="p">.</span><span class="n">CCSD</span><span class="p">).</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">title</span> <span class="o">=</span> <span class="s">''</span>
+    <span class="n">xtitle</span> <span class="o">=</span> <span class="s">''</span>
+    <span class="n">xlimit</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">view</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">saveas</span> <span class="o">=</span> <span class="s">'/Users/ybui/Documents/temp'</span>
+    <span class="n">relpath</span><span class="o">=</span><span class="bp">False</span>
+    <span class="n">graphicsformat</span> <span class="o">=</span> <span class="p">[</span><span class="s">'pdf'</span><span class="p">]</span>
+
+    <span class="n">iowa</span><span class="p">(</span><span class="n">mcdat</span><span class="p">,</span> <span class="n">mclbl</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">xtitle</span><span class="o">=</span><span class="n">xtitle</span><span class="p">,</span> <span class="n">xlimit</span><span class="o">=</span><span class="n">xlimit</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="n">view</span><span class="p">,</span> <span class="n">saveas</span><span class="o">=</span><span class="n">saveas</span><span class="p">,</span> <span class="n">relpath</span><span class="o">=</span><span class="n">relpath</span><span class="p">,</span> <span class="n">graphicsformat</span> <span class="o">=</span> <span class="n">graphicsformat</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>plot_iowa reads in the spreadsheet/csv file with four columns detailing the ‘name’ of the interaction as ‘file’, the type of amino acid A and amino acid B as ‘type1’ and ‘type2’, and the obtained experimenta EFP energy value ‘EFP’ and associated benchmarking CCSD value ‘CCSD’.</p>
+
+<p>It saves the differences between these methods as ‘mcdat’ as a list of EFP-CCSD energy differences (errors).</p>
+
+<p>plot_iowa then assigns some configuration output flags for def iowa:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">def</span> <span class="nf">iowa</span><span class="p">(</span><span class="n">mcdat</span><span class="p">,</span> <span class="n">mclbl</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">''</span><span class="p">,</span> <span class="n">xtitle</span><span class="o">=</span><span class="s">''</span><span class="p">,</span> <span class="n">xlimit</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">saveas</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">relpath</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">graphicsformat</span> <span class="o">=</span> <span class="p">[</span><span class="s">'pdf'</span><span class="p">]):</span>
+
+    <span class="n">aa</span> <span class="o">=</span> <span class="p">[</span><span class="s">'r'</span><span class="p">,</span> <span class="s">'k'</span><span class="p">,</span> <span class="s">'d'</span><span class="p">,</span> <span class="s">'e'</span><span class="p">,</span> <span class="s">'s'</span><span class="p">,</span> <span class="s">'t'</span><span class="p">,</span> <span class="s">'n'</span><span class="p">,</span> <span class="s">'q'</span><span class="p">,</span> <span class="s">'c'</span><span class="p">,</span> <span class="s">'m'</span><span class="p">,</span> <span class="s">'g'</span><span class="p">,</span> <span class="s">'a'</span><span class="p">,</span> <span class="s">'v'</span><span class="p">,</span> <span class="s">'i'</span><span class="p">,</span> <span class="s">'l'</span><span class="p">,</span> <span class="s">'p'</span><span class="p">,</span> <span class="s">'y'</span><span class="p">,</span> <span class="s">'y'</span><span class="p">,</span><span class="s">'h'</span><span class="p">,</span><span class="s">'w'</span><span class="p">]</span>
+    <span class="n">aa_full</span> <span class="o">=</span> <span class="p">[</span><span class="s">'ARG'</span><span class="p">,</span> <span class="s">'LYS'</span><span class="p">,</span> <span class="s">'ASP'</span><span class="p">,</span> <span class="s">'GLU'</span><span class="p">,</span> <span class="s">'SER'</span><span class="p">,</span> <span class="s">'THR'</span><span class="p">,</span> <span class="s">'ASN'</span><span class="p">,</span> <span class="s">'GLN'</span><span class="p">,</span> <span class="s">'CYS'</span><span class="p">,</span> <span class="s">'MET'</span><span class="p">,</span> <span class="s">'GLY'</span><span class="p">,</span> <span class="s">'ALA'</span><span class="p">,</span> <span class="s">'VAL'</span><span class="p">,</span> <span class="s">'ILE'</span><span class="p">,</span><span class="s">'LEU'</span><span class="p">,</span> <span class="s">'PRO'</span><span class="p">,</span><span class="s">'PHE'</span><span class="p">,</span> <span class="s">'TYR'</span><span class="p">,</span><span class="s">'HIE'</span><span class="p">,</span><span class="s">'TRP'</span><span class="p">]</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">mclbl</span><span class="p">,</span> <span class="n">mcdat</span><span class="p">))</span>
+
+    <span class="c1"># handle for frame, overall axis
+</span>    <span class="n">fig</span><span class="p">,</span> <span class="n">axt</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+    <span class="c1">#axt.set_xticks([])  # for quick nolabel, whiteback
+</span>    <span class="c1">#axt.set_yticks([])  # for quick nolabel, whiteback
+</span>    <span class="n">axt</span><span class="p">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">aa</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">minor</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">axt</span><span class="p">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">aa</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">minor</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">axt</span><span class="p">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+    <span class="n">axt</span><span class="p">.</span><span class="n">xaxis</span><span class="p">.</span><span class="n">tick_top</span><span class="p">()</span>  <span class="c1"># comment for quick nolabel, whiteback
+</span>    <span class="c1">#axt.set_xticklabels(aa, minor=False, rotation=60, size='small')  # comment for quick nolabel, whiteback
+</span>    <span class="n">axt</span><span class="p">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">aa_full</span><span class="p">,</span> <span class="n">minor</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s">'small'</span><span class="p">)</span>  <span class="c1"># comment for quick nolabel, whiteback
+</span>
+    <span class="c1">#axt.set_yticklabels(aa, minor=False, size='small')  # comment for quick nolabel, whiteback
+</span>    <span class="n">axt</span><span class="p">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">aa_full</span><span class="p">,</span> <span class="n">minor</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s">'small'</span><span class="p">)</span>  <span class="c1"># comment for quick nolabel, whiteback
+</span>
+    <span class="n">axt</span><span class="p">.</span><span class="n">xaxis</span><span class="p">.</span><span class="n">set_tick_params</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">axt</span><span class="p">.</span><span class="n">yaxis</span><span class="p">.</span><span class="n">set_tick_params</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1">#axt.set_title('%s' % (title), fontsize=16, verticalalignment='bottom')
+</span>    <span class="c1">#axt.text(10.0, -1.5, title, horizontalalignment='center', fontsize=16)
+</span>
+    <span class="c1"># nill spacing between 20x20 heatmaps
+</span>    <span class="n">plt</span><span class="p">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">aa1</span> <span class="ow">in</span> <span class="n">aa</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">aa2</span> <span class="ow">in</span> <span class="n">aa</span><span class="p">:</span>
+            <span class="n">cb</span> <span class="o">=</span> <span class="n">composition_tile</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">aa1</span><span class="p">,</span> <span class="n">aa2</span><span class="p">)</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="p">.</span><span class="n">axes</span><span class="p">.</span><span class="n">Subplot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">aa</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">aa</span><span class="p">),</span> <span class="n">index</span><span class="p">)</span>
+            <span class="n">fig</span><span class="p">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+            <span class="n">heatmap</span> <span class="o">=</span> <span class="n">ax</span><span class="p">.</span><span class="n">pcolor</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">xlimit</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">xlimit</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="p">.</span><span class="n">cm</span><span class="p">.</span><span class="n">PRGn</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+            <span class="n">ax</span><span class="p">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+            <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1">#plt.title(title)
+</span>    <span class="k">for</span> <span class="n">posn</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">3.85</span><span class="p">,</span> <span class="mf">7.75</span><span class="p">,</span> <span class="mf">10.65</span><span class="p">]:</span>
+        <span class="n">axt</span><span class="p">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">posn</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'k'</span><span class="p">)</span>
+        <span class="n">axt</span><span class="p">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">posn</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'k'</span><span class="p">)</span>
+    <span class="c1">#axt.set_zorder(100)
+</span>
+    <span class="c1"># save and show
+</span>    <span class="n">pltuid</span> <span class="o">=</span> <span class="n">title</span> <span class="o">+</span> <span class="s">'_'</span> <span class="o">+</span> <span class="n">hashlib</span><span class="p">.</span><span class="n">sha1</span><span class="p">(</span><span class="n">title</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">xlimit</span><span class="p">)).</span><span class="n">encode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">).</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="n">pltfile</span> <span class="o">=</span> <span class="n">expand_saveas</span><span class="p">(</span><span class="n">saveas</span><span class="p">,</span> <span class="n">pltuid</span><span class="p">,</span> <span class="n">def_prefix</span><span class="o">=</span><span class="s">'iowa_'</span><span class="p">,</span> <span class="n">relpath</span><span class="o">=</span><span class="n">relpath</span><span class="p">)</span>
+    <span class="n">files_saved</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">graphicsformat</span><span class="p">:</span>
+        <span class="n">savefile</span> <span class="o">=</span> <span class="n">pltfile</span> <span class="o">+</span> <span class="s">'.'</span> <span class="o">+</span> <span class="n">ext</span><span class="p">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">plt</span><span class="p">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savefile</span><span class="p">,</span> <span class="n">transparent</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">ext</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s">'tight'</span><span class="p">)</span>
+        <span class="c1">#plt.savefig(savefile, transparent=False, format=ext, bbox_inches='tight')  # for quick nolabel, whiteback
+</span>        <span class="n">files_saved</span><span class="p">[</span><span class="n">ext</span><span class="p">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">savefile</span>
+    <span class="k">if</span> <span class="n">view</span><span class="p">:</span>
+        <span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">plt</span><span class="p">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">files_saved</span>
+<span class="c1">###########
+</span></code></pre></div></div>
+<p>def iowa goes through a for loop for every type of amino acid to generate a subplot by calling def composition_tile:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">xlimit</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="k">def</span> <span class="nf">composition_tile</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">aa1</span><span class="p">,</span> <span class="n">aa2</span><span class="p">):</span>
+    <span class="c1">## db = dictionary of values (AA1-AA2:#) --&gt; length is approximately 3362
+</span>    <span class="kn">import</span> <span class="nn">re</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+    <span class="n">bfdbpattern</span> <span class="o">=</span> <span class="n">re</span><span class="p">.</span><span class="nb">compile</span><span class="p">(</span><span class="s">'s\d\d\d([a-z])\d\d\d([a-z])\d'</span><span class="p">)</span>
+    <span class="n">tiles</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">db</span><span class="p">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">bfdbname</span> <span class="o">=</span> <span class="n">bfdbpattern</span><span class="p">.</span><span class="n">match</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">bfdbname</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">aa1</span> <span class="ow">and</span> <span class="n">bfdbname</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="n">aa2</span><span class="p">)</span> <span class="ow">or</span> \
+                <span class="p">(</span><span class="n">bfdbname</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="n">aa1</span> <span class="ow">and</span> <span class="n">bfdbname</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">aa2</span><span class="p">):</span>
+                <span class="n">tiles</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">tiles</span><span class="p">:</span>
+        <span class="n">tiles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tiles</span><span class="p">))))</span>
+    <span class="n">pad</span> <span class="o">=</span> <span class="n">dim</span><span class="o">*</span><span class="n">dim</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">tiles</span><span class="p">)</span>
+    <span class="n">tiles</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">pad</span>
+
+    <span class="c1">#print np.reshape(np.array(tiles), (dim,dim))
+</span>
+    <span class="c1">#plt.pcolor(np.reshape(np.array(tiles), (dim,dim)), vmin=-xlimit, vmax=xlimit, cmap=plt.cm.PRGn)
+</span>    <span class="c1">#plt.colorbar()
+</span>    <span class="c1">#plt.show()
+</span>    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">tiles</span><span class="p">),</span> <span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+
+</code></pre></div></div>
+<p>before saving all the heatmaps using def expand_saveas:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">##########
+</span>
+<span class="k">def</span> <span class="nf">expand_saveas</span><span class="p">(</span><span class="n">saveas</span><span class="p">,</span> <span class="n">def_filename</span><span class="p">,</span> <span class="n">def_path</span><span class="o">=</span><span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">curdir</span><span class="p">),</span> <span class="n">def_prefix</span><span class="o">=</span><span class="s">''</span><span class="p">,</span> <span class="n">relpath</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">defname</span> <span class="o">=</span> <span class="n">def_prefix</span> <span class="o">+</span> <span class="n">def_filename</span><span class="p">.</span><span class="n">replace</span><span class="p">(</span><span class="s">' '</span><span class="p">,</span> <span class="s">'_'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">saveas</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">pth</span> <span class="o">=</span> <span class="n">def_path</span>
+        <span class="n">fil</span> <span class="o">=</span> <span class="n">defname</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pth</span><span class="p">,</span> <span class="n">fil</span> <span class="o">=</span> <span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="n">saveas</span><span class="p">)</span>
+        <span class="n">pth</span> <span class="o">=</span> <span class="n">pth</span> <span class="k">if</span> <span class="n">pth</span> <span class="o">!=</span> <span class="s">''</span> <span class="k">else</span> <span class="n">def_path</span>
+        <span class="n">fil</span> <span class="o">=</span> <span class="n">fil</span> <span class="k">if</span> <span class="n">fil</span> <span class="o">!=</span> <span class="s">''</span> <span class="k">else</span> <span class="n">defname</span>
+    <span class="n">abspathfile</span> <span class="o">=</span> <span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">pth</span><span class="p">),</span> <span class="n">fil</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">relpath</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">abspathfile</span><span class="p">,</span> <span class="n">os</span><span class="p">.</span><span class="n">getcwd</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">abspathfile</span>
+
+</code></pre></div></div>
+
+<p>Go ahead and run the script, add some black bars and legends in pptx (this is not the script) to make it easier to group areas of correlation (reallly over and underbinding):</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plot_iowa</span><span class="p">(</span><span class="n">small</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><img src="/images/iowaplots/iowa.png" alt="png" /></p>
+
+<p>You can see the type of interaction and the number of types that specific type of interaciton occurs in the dataset in each heatmap. You also can see whether EFP over and under predicts the total energy of an interactions.</p>
+
+<p>As such, it becomes very easy to see that with charged-charged interactions efp overpredicts and there seems to be alot more of those types of interactions so these errors need to be addressed in our theory some how in the future.</p>]]></content><author><name>Terri Bui, PhD</name><email>yen.bui@merck.com</email></author><category term="data wrangling" /><category term="data science" /><category term="messy data" /><summary type="html"><![CDATA[Data Wrangling, Data Science, Messy Data]]></summary></entry></feed>

@@ -1,0 +1,728 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Iowa Plots - The Data Janitor</title>
+<meta name="description" content="Data Wrangling, Data Science, Messy Data">
+
+
+  <meta name="author" content="Terri Bui, PhD">
+  
+  <meta property="article:author" content="Terri Bui, PhD">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="The Data Janitor">
+<meta property="og:title" content="Iowa Plots">
+<meta property="og:url" content="http://localhost:4000/iowaplots/">
+
+
+  <meta property="og:description" content="Data Wrangling, Data Science, Messy Data">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2020-05-26T00:00:00-04:00">
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="http://localhost:4000/iowaplots/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Terri Bui, PhD",
+      "url": "http://localhost:4000/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<!-- for mathjax support -->
+
+
+
+  <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="The Data Janitor Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          The Data Janitor
+          
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/about/">About</a>
+            </li><li class="masthead__menu-item">
+              <a href="/merck/">Merck</a>
+            </li><li class="masthead__menu-item">
+              <a href="/portfolio/">Purdue Data Mine</a>
+            </li><li class="masthead__menu-item">
+              <a href="/data-wrangling/">Data Wrangling Projects</a>
+            </li><li class="masthead__menu-item">
+              <a href="/presentations/">Presentations</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person" class="h-card">
+
+  
+    <div class="author__avatar">
+      <a href="http://localhost:4000/">
+        <img src="/images/bio_memoji.png" alt="Terri Bui, PhD" itemprop="image" class="u-photo">
+      </a>
+    </div>
+  
+
+  <div class="author__content">
+    <h3 class="author__name p-name" itemprop="name">
+      <a class="u-url" rel="me" href="http://localhost:4000/" itemprop="url">Terri Bui, PhD</a>
+    </h3>
+    
+      <div class="author__bio p-note" itemprop="description">
+        <p>Sr. Scientist <br />  Data Science and Informatics <br /> Merck Research Labs (MRL)</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name" class="p-locality">NYC Metropolican Area</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+        <li>
+          <a href="mailto:yen.bui@merck.com" rel="me" class="u-email">
+            <meta itemprop="email" content="yen.bui@merck.com" />
+            <i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/yhbui" itemprop="sameAs" rel="nofollow noopener noreferrer me">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/yhb8r4" itemprop="sameAs" rel="nofollow noopener noreferrer me">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer me">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+  
+  </div>
+
+
+
+  <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Iowa Plots">
+    <meta itemprop="description" content="Data Wrangling, Data Science, Messy Data">
+    <meta itemprop="datePublished" content="2020-05-26T00:00:00-04:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title p-name" itemprop="headline">
+            <a href="http://localhost:4000/iowaplots/" class="u-url" itemprop="url">Iowa Plots
+</a>
+          </h1>
+          
+
+  <p class="page__meta">
+    
+
+    
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          5 minute read
+        
+      </span>
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content e-content" itemprop="text">
+        
+        <p>While I was at Purdue, my field of student was computational chemistry. However, my specialization was in theory (scientific programming). This meant that alot of the methods we were developing required significant benchmarking of our ‘theoretical’ value to:</p>
+
+<ol>
+  <li>experimental values</li>
+  <li>theoretical values obtained through other historically robust methods of theory.</li>
+</ol>
+
+<p>In terms of the profile of our data, correlations were obtained typically through variations of basis set, molecular system size, as well as level theory.</p>
+
+<p>Analysis followed byInterpretation, as you can imagine, was very tedious as we would have to continuously scan over numerical data organized in tabular spreadsheets. The volume and complexity of the data make it difficult to pick up on trends and correlation. Because let’s be honest, scanning over millions of rows of numerical data is not an efficient means of analyze.</p>
+
+<p>Pretty quickly we attempted to utilize ‘Heat Maps’ that were a betters mean to serve as graphical representations of data that utilize color-coded levels of correlation. It became a great means of surveying large volumes of data as the eye is able to pick up contrasting shades of color much faster than numerical differentiation.</p>
+
+<p>i.e., the darker the color the greater the associated numerical value on a continuous scale.</p>
+
+<p><img src="/images/iowaplots/typical_heatmap.png" alt="png" /></p>
+
+<p>However, you do lose some granularity with heatmaps are you subset the data into types - the visualization isn’t able to give insight into the frequency of occurrence that a correlation pairing might occur (this is important as you want to see how representative your dataset and how robust your average values are)!</p>
+
+<p>A few years ago to combat this, IOWA plots were utilized to address this issue.</p>
+
+<p>You can think of them as concatenated ‘heatmaps’ on steroids.</p>
+
+<p>In my specific work, ended upload using IOWA plots to visualize over and underbinding types  amino acid-amino acid side-chain side-chain interactions in our SSI dataset several years back. Lori Burns, the gal who pioneered the visualization was kind enough to share source code for generation of the following plot:</p>
+
+<p><img src="/images/iowaplots/output_7_0.png" alt="png" /></p>
+
+<p>Her code was pretty clean and utilized basic python library packages:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.axes</span> <span class="kn">import</span> <span class="n">Subplot</span>
+
+</code></pre></div></div>
+
+<p>Generation of the Iowa plot uses the main function plot_iowa:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">def</span> <span class="nf">plot_iowa</span> <span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s">'\s+'</span><span class="p">,</span><span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s">'file'</span><span class="p">,</span><span class="s">'type1'</span><span class="p">,</span><span class="s">'type2'</span><span class="p">,</span><span class="s">'EFP'</span><span class="p">,</span><span class="s">'CCSD'</span><span class="p">])</span>
+    <span class="n">mclbl</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="nb">file</span><span class="p">).</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">mcdat</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">EFP</span> <span class="o">-</span> <span class="n">data</span><span class="p">.</span><span class="n">CCSD</span><span class="p">).</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">title</span> <span class="o">=</span> <span class="s">''</span>
+    <span class="n">xtitle</span> <span class="o">=</span> <span class="s">''</span>
+    <span class="n">xlimit</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">view</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">saveas</span> <span class="o">=</span> <span class="s">'/Users/ybui/Documents/temp'</span>
+    <span class="n">relpath</span><span class="o">=</span><span class="bp">False</span>
+    <span class="n">graphicsformat</span> <span class="o">=</span> <span class="p">[</span><span class="s">'pdf'</span><span class="p">]</span>
+
+    <span class="n">iowa</span><span class="p">(</span><span class="n">mcdat</span><span class="p">,</span> <span class="n">mclbl</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">xtitle</span><span class="o">=</span><span class="n">xtitle</span><span class="p">,</span> <span class="n">xlimit</span><span class="o">=</span><span class="n">xlimit</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="n">view</span><span class="p">,</span> <span class="n">saveas</span><span class="o">=</span><span class="n">saveas</span><span class="p">,</span> <span class="n">relpath</span><span class="o">=</span><span class="n">relpath</span><span class="p">,</span> <span class="n">graphicsformat</span> <span class="o">=</span> <span class="n">graphicsformat</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>plot_iowa reads in the spreadsheet/csv file with four columns detailing the ‘name’ of the interaction as ‘file’, the type of amino acid A and amino acid B as ‘type1’ and ‘type2’, and the obtained experimenta EFP energy value ‘EFP’ and associated benchmarking CCSD value ‘CCSD’.</p>
+
+<p>It saves the differences between these methods as ‘mcdat’ as a list of EFP-CCSD energy differences (errors).</p>
+
+<p>plot_iowa then assigns some configuration output flags for def iowa:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">def</span> <span class="nf">iowa</span><span class="p">(</span><span class="n">mcdat</span><span class="p">,</span> <span class="n">mclbl</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">''</span><span class="p">,</span> <span class="n">xtitle</span><span class="o">=</span><span class="s">''</span><span class="p">,</span> <span class="n">xlimit</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">saveas</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">relpath</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">graphicsformat</span> <span class="o">=</span> <span class="p">[</span><span class="s">'pdf'</span><span class="p">]):</span>
+
+    <span class="n">aa</span> <span class="o">=</span> <span class="p">[</span><span class="s">'r'</span><span class="p">,</span> <span class="s">'k'</span><span class="p">,</span> <span class="s">'d'</span><span class="p">,</span> <span class="s">'e'</span><span class="p">,</span> <span class="s">'s'</span><span class="p">,</span> <span class="s">'t'</span><span class="p">,</span> <span class="s">'n'</span><span class="p">,</span> <span class="s">'q'</span><span class="p">,</span> <span class="s">'c'</span><span class="p">,</span> <span class="s">'m'</span><span class="p">,</span> <span class="s">'g'</span><span class="p">,</span> <span class="s">'a'</span><span class="p">,</span> <span class="s">'v'</span><span class="p">,</span> <span class="s">'i'</span><span class="p">,</span> <span class="s">'l'</span><span class="p">,</span> <span class="s">'p'</span><span class="p">,</span> <span class="s">'y'</span><span class="p">,</span> <span class="s">'y'</span><span class="p">,</span><span class="s">'h'</span><span class="p">,</span><span class="s">'w'</span><span class="p">]</span>
+    <span class="n">aa_full</span> <span class="o">=</span> <span class="p">[</span><span class="s">'ARG'</span><span class="p">,</span> <span class="s">'LYS'</span><span class="p">,</span> <span class="s">'ASP'</span><span class="p">,</span> <span class="s">'GLU'</span><span class="p">,</span> <span class="s">'SER'</span><span class="p">,</span> <span class="s">'THR'</span><span class="p">,</span> <span class="s">'ASN'</span><span class="p">,</span> <span class="s">'GLN'</span><span class="p">,</span> <span class="s">'CYS'</span><span class="p">,</span> <span class="s">'MET'</span><span class="p">,</span> <span class="s">'GLY'</span><span class="p">,</span> <span class="s">'ALA'</span><span class="p">,</span> <span class="s">'VAL'</span><span class="p">,</span> <span class="s">'ILE'</span><span class="p">,</span><span class="s">'LEU'</span><span class="p">,</span> <span class="s">'PRO'</span><span class="p">,</span><span class="s">'PHE'</span><span class="p">,</span> <span class="s">'TYR'</span><span class="p">,</span><span class="s">'HIE'</span><span class="p">,</span><span class="s">'TRP'</span><span class="p">]</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">mclbl</span><span class="p">,</span> <span class="n">mcdat</span><span class="p">))</span>
+
+    <span class="c1"># handle for frame, overall axis
+</span>    <span class="n">fig</span><span class="p">,</span> <span class="n">axt</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+    <span class="c1">#axt.set_xticks([])  # for quick nolabel, whiteback
+</span>    <span class="c1">#axt.set_yticks([])  # for quick nolabel, whiteback
+</span>    <span class="n">axt</span><span class="p">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">aa</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">minor</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">axt</span><span class="p">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">aa</span><span class="p">))</span> <span class="o">+</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">minor</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">axt</span><span class="p">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+    <span class="n">axt</span><span class="p">.</span><span class="n">xaxis</span><span class="p">.</span><span class="n">tick_top</span><span class="p">()</span>  <span class="c1"># comment for quick nolabel, whiteback
+</span>    <span class="c1">#axt.set_xticklabels(aa, minor=False, rotation=60, size='small')  # comment for quick nolabel, whiteback
+</span>    <span class="n">axt</span><span class="p">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">aa_full</span><span class="p">,</span> <span class="n">minor</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s">'small'</span><span class="p">)</span>  <span class="c1"># comment for quick nolabel, whiteback
+</span>
+    <span class="c1">#axt.set_yticklabels(aa, minor=False, size='small')  # comment for quick nolabel, whiteback
+</span>    <span class="n">axt</span><span class="p">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">aa_full</span><span class="p">,</span> <span class="n">minor</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s">'small'</span><span class="p">)</span>  <span class="c1"># comment for quick nolabel, whiteback
+</span>
+    <span class="n">axt</span><span class="p">.</span><span class="n">xaxis</span><span class="p">.</span><span class="n">set_tick_params</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">axt</span><span class="p">.</span><span class="n">yaxis</span><span class="p">.</span><span class="n">set_tick_params</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1">#axt.set_title('%s' % (title), fontsize=16, verticalalignment='bottom')
+</span>    <span class="c1">#axt.text(10.0, -1.5, title, horizontalalignment='center', fontsize=16)
+</span>
+    <span class="c1"># nill spacing between 20x20 heatmaps
+</span>    <span class="n">plt</span><span class="p">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">wspace</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">aa1</span> <span class="ow">in</span> <span class="n">aa</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">aa2</span> <span class="ow">in</span> <span class="n">aa</span><span class="p">:</span>
+            <span class="n">cb</span> <span class="o">=</span> <span class="n">composition_tile</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">aa1</span><span class="p">,</span> <span class="n">aa2</span><span class="p">)</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="p">.</span><span class="n">axes</span><span class="p">.</span><span class="n">Subplot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">aa</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">aa</span><span class="p">),</span> <span class="n">index</span><span class="p">)</span>
+            <span class="n">fig</span><span class="p">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+            <span class="n">heatmap</span> <span class="o">=</span> <span class="n">ax</span><span class="p">.</span><span class="n">pcolor</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">xlimit</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">xlimit</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="p">.</span><span class="n">cm</span><span class="p">.</span><span class="n">PRGn</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+            <span class="n">ax</span><span class="p">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+            <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1">#plt.title(title)
+</span>    <span class="k">for</span> <span class="n">posn</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">3.85</span><span class="p">,</span> <span class="mf">7.75</span><span class="p">,</span> <span class="mf">10.65</span><span class="p">]:</span>
+        <span class="n">axt</span><span class="p">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">posn</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'k'</span><span class="p">)</span>
+        <span class="n">axt</span><span class="p">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">posn</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'k'</span><span class="p">)</span>
+    <span class="c1">#axt.set_zorder(100)
+</span>
+    <span class="c1"># save and show
+</span>    <span class="n">pltuid</span> <span class="o">=</span> <span class="n">title</span> <span class="o">+</span> <span class="s">'_'</span> <span class="o">+</span> <span class="n">hashlib</span><span class="p">.</span><span class="n">sha1</span><span class="p">(</span><span class="n">title</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">xlimit</span><span class="p">)).</span><span class="n">encode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">).</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="n">pltfile</span> <span class="o">=</span> <span class="n">expand_saveas</span><span class="p">(</span><span class="n">saveas</span><span class="p">,</span> <span class="n">pltuid</span><span class="p">,</span> <span class="n">def_prefix</span><span class="o">=</span><span class="s">'iowa_'</span><span class="p">,</span> <span class="n">relpath</span><span class="o">=</span><span class="n">relpath</span><span class="p">)</span>
+    <span class="n">files_saved</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">graphicsformat</span><span class="p">:</span>
+        <span class="n">savefile</span> <span class="o">=</span> <span class="n">pltfile</span> <span class="o">+</span> <span class="s">'.'</span> <span class="o">+</span> <span class="n">ext</span><span class="p">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">plt</span><span class="p">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savefile</span><span class="p">,</span> <span class="n">transparent</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">ext</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s">'tight'</span><span class="p">)</span>
+        <span class="c1">#plt.savefig(savefile, transparent=False, format=ext, bbox_inches='tight')  # for quick nolabel, whiteback
+</span>        <span class="n">files_saved</span><span class="p">[</span><span class="n">ext</span><span class="p">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">savefile</span>
+    <span class="k">if</span> <span class="n">view</span><span class="p">:</span>
+        <span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">plt</span><span class="p">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">files_saved</span>
+<span class="c1">###########
+</span></code></pre></div></div>
+<p>def iowa goes through a for loop for every type of amino acid to generate a subplot by calling def composition_tile:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">xlimit</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="k">def</span> <span class="nf">composition_tile</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">aa1</span><span class="p">,</span> <span class="n">aa2</span><span class="p">):</span>
+    <span class="c1">## db = dictionary of values (AA1-AA2:#) --&gt; length is approximately 3362
+</span>    <span class="kn">import</span> <span class="nn">re</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+    <span class="n">bfdbpattern</span> <span class="o">=</span> <span class="n">re</span><span class="p">.</span><span class="nb">compile</span><span class="p">(</span><span class="s">'s\d\d\d([a-z])\d\d\d([a-z])\d'</span><span class="p">)</span>
+    <span class="n">tiles</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">db</span><span class="p">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">bfdbname</span> <span class="o">=</span> <span class="n">bfdbpattern</span><span class="p">.</span><span class="n">match</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">bfdbname</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">aa1</span> <span class="ow">and</span> <span class="n">bfdbname</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="n">aa2</span><span class="p">)</span> <span class="ow">or</span> \
+                <span class="p">(</span><span class="n">bfdbname</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="n">aa1</span> <span class="ow">and</span> <span class="n">bfdbname</span><span class="p">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">aa2</span><span class="p">):</span>
+                <span class="n">tiles</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">tiles</span><span class="p">:</span>
+        <span class="n">tiles</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tiles</span><span class="p">))))</span>
+    <span class="n">pad</span> <span class="o">=</span> <span class="n">dim</span><span class="o">*</span><span class="n">dim</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">tiles</span><span class="p">)</span>
+    <span class="n">tiles</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">pad</span>
+
+    <span class="c1">#print np.reshape(np.array(tiles), (dim,dim))
+</span>
+    <span class="c1">#plt.pcolor(np.reshape(np.array(tiles), (dim,dim)), vmin=-xlimit, vmax=xlimit, cmap=plt.cm.PRGn)
+</span>    <span class="c1">#plt.colorbar()
+</span>    <span class="c1">#plt.show()
+</span>    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">tiles</span><span class="p">),</span> <span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+
+</code></pre></div></div>
+<p>before saving all the heatmaps using def expand_saveas:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">##########
+</span>
+<span class="k">def</span> <span class="nf">expand_saveas</span><span class="p">(</span><span class="n">saveas</span><span class="p">,</span> <span class="n">def_filename</span><span class="p">,</span> <span class="n">def_path</span><span class="o">=</span><span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">curdir</span><span class="p">),</span> <span class="n">def_prefix</span><span class="o">=</span><span class="s">''</span><span class="p">,</span> <span class="n">relpath</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">defname</span> <span class="o">=</span> <span class="n">def_prefix</span> <span class="o">+</span> <span class="n">def_filename</span><span class="p">.</span><span class="n">replace</span><span class="p">(</span><span class="s">' '</span><span class="p">,</span> <span class="s">'_'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">saveas</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">pth</span> <span class="o">=</span> <span class="n">def_path</span>
+        <span class="n">fil</span> <span class="o">=</span> <span class="n">defname</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pth</span><span class="p">,</span> <span class="n">fil</span> <span class="o">=</span> <span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="n">saveas</span><span class="p">)</span>
+        <span class="n">pth</span> <span class="o">=</span> <span class="n">pth</span> <span class="k">if</span> <span class="n">pth</span> <span class="o">!=</span> <span class="s">''</span> <span class="k">else</span> <span class="n">def_path</span>
+        <span class="n">fil</span> <span class="o">=</span> <span class="n">fil</span> <span class="k">if</span> <span class="n">fil</span> <span class="o">!=</span> <span class="s">''</span> <span class="k">else</span> <span class="n">defname</span>
+    <span class="n">abspathfile</span> <span class="o">=</span> <span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">pth</span><span class="p">),</span> <span class="n">fil</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">relpath</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">abspathfile</span><span class="p">,</span> <span class="n">os</span><span class="p">.</span><span class="n">getcwd</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">abspathfile</span>
+
+</code></pre></div></div>
+
+<p>Go ahead and run the script, add some black bars and legends in pptx (this is not the script) to make it easier to group areas of correlation (reallly over and underbinding):</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plot_iowa</span><span class="p">(</span><span class="n">small</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><img src="/images/iowaplots/iowa.png" alt="png" /></p>
+
+<p>You can see the type of interaction and the number of types that specific type of interaciton occurs in the dataset in each heatmap. You also can see whether EFP over and under predicts the total energy of an interactions.</p>
+
+<p>As such, it becomes very easy to see that with charged-charged interactions efp overpredicts and there seems to be alot more of those types of interactions so these errors need to be addressed in our theory some how in the future.</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/tags/#data-science" class="page__taxonomy-item p-category" rel="tag">data science</a><span class="sep">, </span>
+    
+      <a href="/tags/#data-wrangling" class="page__taxonomy-item p-category" rel="tag">data wrangling</a><span class="sep">, </span>
+    
+      <a href="/tags/#messy-data" class="page__taxonomy-item p-category" rel="tag">messy data</a>
+    
+    </span>
+  </p>
+
+
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2020-05-26T00:00:00-04:00">May 26, 2020</time></p>
+
+      </footer>
+
+      <section class="page__share">
+  
+    <h4 class="page__share-title">Share on</h4>
+  
+
+  <a href="https://twitter.com/intent/tweet?text=Iowa+Plots%20http%3A%2F%2Flocalhost%3A4000%2Fiowaplots%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A4000%2Fiowaplots%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+
+  <a href="https://www.linkedin.com/shareArticle?mini=true&url=http%3A%2F%2Flocalhost%3A4000%2Fiowaplots%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+</section>
+
+
+      
+  <nav class="pagination">
+    
+      <a href="#" class="pagination--pager disabled">Previous</a>
+    
+    
+      <a href="/EFPMC/" class="pagination--pager" title="EFPMC: A Monte Carlo implementation with the EFP Method
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h2 class="page__related-title">You may also enjoy</h2>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/similarity_measures/" rel="permalink">Molecular Fingerprints: Implementation of a pairwise distribution based molecular representation
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+
+    
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          7 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">Classifying Molecular Configurations/Representations
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/EFPMC/" rel="permalink">EFPMC: A Monte Carlo implementation with the EFP Method
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+
+    
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          9 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">Overcoming Energy Barriers
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+      <li><strong>Follow:</strong></li>
+    
+
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+
+    
+      <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2022 Terri Bui, PhD. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

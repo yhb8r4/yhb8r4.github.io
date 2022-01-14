@@ -1,0 +1,771 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>EFPMC: A Monte Carlo implementation with the EFP Method - The Data Janitor</title>
+<meta name="description" content="Overcoming Energy Barriers">
+
+
+  <meta name="author" content="Terri Bui, PhD">
+  
+  <meta property="article:author" content="Terri Bui, PhD">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="The Data Janitor">
+<meta property="og:title" content="EFPMC: A Monte Carlo implementation with the EFP Method">
+<meta property="og:url" content="http://localhost:4000/EFPMC/">
+
+
+  <meta property="og:description" content="Overcoming Energy Barriers">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2020-06-07T00:00:00-04:00">
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="http://localhost:4000/EFPMC/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Terri Bui, PhD",
+      "url": "http://localhost:4000/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<!-- for mathjax support -->
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    TeX: { equationNumbers: { autoNumber: "AMS" } }
+    });
+  </script>
+  <script type="text/javascript" async src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+  <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="The Data Janitor Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          The Data Janitor
+          
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/about/">About</a>
+            </li><li class="masthead__menu-item">
+              <a href="/merck/">Merck</a>
+            </li><li class="masthead__menu-item">
+              <a href="/portfolio/">Purdue Data Mine</a>
+            </li><li class="masthead__menu-item">
+              <a href="/data-wrangling/">Data Wrangling Projects</a>
+            </li><li class="masthead__menu-item">
+              <a href="/presentations/">Presentations</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person" class="h-card">
+
+  
+    <div class="author__avatar">
+      <a href="http://localhost:4000/">
+        <img src="/images/bio_memoji.png" alt="Terri Bui, PhD" itemprop="image" class="u-photo">
+      </a>
+    </div>
+  
+
+  <div class="author__content">
+    <h3 class="author__name p-name" itemprop="name">
+      <a class="u-url" rel="me" href="http://localhost:4000/" itemprop="url">Terri Bui, PhD</a>
+    </h3>
+    
+      <div class="author__bio p-note" itemprop="description">
+        <p>Sr. Scientist <br />  Data Science and Informatics <br /> Merck Research Labs (MRL)</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name" class="p-locality">NYC Metropolican Area</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+        <li>
+          <a href="mailto:yen.bui@merck.com" rel="me" class="u-email">
+            <meta itemprop="email" content="yen.bui@merck.com" />
+            <i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/yhbui" itemprop="sameAs" rel="nofollow noopener noreferrer me">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/yhb8r4" itemprop="sameAs" rel="nofollow noopener noreferrer me">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer me">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+  
+  </div>
+
+
+
+  <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="EFPMC: A Monte Carlo implementation with the EFP Method">
+    <meta itemprop="description" content="Overcoming Energy Barriers">
+    <meta itemprop="datePublished" content="2020-06-07T00:00:00-04:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title p-name" itemprop="headline">
+            <a href="http://localhost:4000/EFPMC/" class="u-url" itemprop="url">EFPMC: A Monte Carlo implementation with the EFP Method
+</a>
+          </h1>
+          
+
+  <p class="page__meta">
+    
+
+    
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          9 minute read
+        
+      </span>
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content e-content" itemprop="text">
+        
+        <p>When I was apart of a theoretical group, we pride ourselves on being on the frontier of chemistry studying interactions between matter in it’s purest form – mathematically (and I guess programmatically).</p>
+
+<p>However – we also needed to get funding so we had to tackle use cases to apply our theory. One of those use cases involved understanding the effect of cofactors on co-crystal formulations for active pharmaceutical ingredients. However, performing an exhaustive experimental screening is experimentally expensive. Thus, there is a need for a tool that is relatively accurate yet computationally cost effective for the virtual screening of drugs based on changes in functional group interaction energies in order to approximate free energy changes. My particular contribution was implementing of the Monte-Carlo method and perform some simple benchmarking studies for this particular use case.</p>
+
+<p><strong>Monte-Carlo Sampling</strong></p>
+
+<p>Whelp.</p>
+
+<p>Here goes the technical implementation of a Monte-Carlo integration over configuration space using the effective fragment potential (EFP) method as a description for a chemical system. Using the effective fragment potential method, is possible to calculate energetic properties of any substance of a system of \(N\) interacting EFP fragments:</p>
+
+\[E^{EFP}=E_{coul}+E_{ind}+E_{exch}+E_{disp}+(E_{CT})\]
+
+<p>In order to explore the configurational space, random sampling of points are obtained through moving each EFP fragments from an initial configuration in succession:</p>
+
+\[x = x + \alpha\xi_{x}\]
+
+\[y = y + \alpha\xi_{y}\]
+
+\[z = z + \alpha\xi_{z}\]
+
+\[a = a + \alpha\xi_{a}\]
+
+\[b = b + \alpha\xi_{b}\]
+
+\[c = c + \alpha\xi_{c}\]
+
+<p>where \(\alpha\) is the maximum allowed displacement, and \(\xi_{x}\), \(\xi_{y}\), \(\xi_{z}\), \(\xi_{a}\), \(\xi_{b}\), \(\xi_{c}\) are random numbers between (-1) and 1. \(x\), \(y\), and \(z\) refer to the Cartesian coordinates for the center of mass of a fragment. \(a\), \(b\), and \(c\) refer the fragment’s Euler angles. The change in energy of the system \(\Delta E\) following the move is calculated. If \(\Delta E &gt; 0\), then the move is evaluated against probability of \(exp(\Delta E/kT))\) where a random number  \(\xi_{4}\) between 0 and 1 is evaluated against \(exp(\Delta E/kT))\). If \(\xi_{4}\ &lt; exp(\Delta E/kT))\), then the system configuration is accepted despite \(\Delta E &gt; 0\). However if \(\xi_{4}\ &gt; exp(\Delta E/kT))\), then the move is rejected and the system is returned to its prior configuration.</p>
+
+<p><strong>Technical Implementation</strong></p>
+
+<p>The general EFP method has been implemented as a library API called <a href="https://github.com/ilyak/libefpl">libefp</a>.  The libefp library and efpmd integration program are written in fully portable standard C language and parallelized using OpenMP. Here we describe some brief additional functions to efpmd program that serves as the integrator for a Monte-Carlo simulation with the EFP method. You can find a branch of the efpmd-mc implementation at my branch <a href="https://github.com/yhb8r4/libefp">libefp_Terri</a>.</p>
+
+<p>Here is a general scheme of my modification to the source code:</p>
+
+<p><img src="/images/efpmd_mc/mc_software.png" alt="png" /></p>
+
+<p>In order to perform Monte-Carlo using the EFP method, a new subroutine sim_mc() was introduced and linked to the efpmd program. The simulation configurations for performing a EFP-MC calculations, involve the run_type flag introduced as ‘run_type mc’ and max_step and temp general parameters for the simulation. Similarly to other run_types in efpmd, sim_mc() is initialized in its own header file (mc.h) and declared in mc.c, both located in the ~/efpmd/src/ directory. sim_mc includes/calls on other functions in the efpmd program through header files math.h, common.h, and rand.h. Running a EFP-MC related parameters that control the step size are:</p>
+
+<ul>
+  <li>Max Displacement Step Size: dismag_threshold [default = 0.05]</li>
+  <li>Update Displacement Step Size: dismag_modifier [default = 0.95]</li>
+  <li>Frequency of Updating Displacement: dismag_modify_steps [default = 100]</li>
+</ul>
+
+<p>System information is parsed and stored in struct mc_state in the void mc_create. It is within mc_state that the initial configuration for the original configuration is accessible. Mc_state also contains a dynamic array for proposed configuration x_prop that is updated at each step of the simulation.  Enum mc_init is the function that allocates the memory for mc_state, along with initializing the Monte-Carlo step counter ‘step’, the initial accepted step n_accept and rejected steps n_reject.</p>
+
+<p>Accessory functions such mc_set_func() and mc_set_user_data() are provided in order to transfer data structures and simulation configuration information populated within the initial main() function in main.c to data structures within sim_mc(). Sim_mc which is able to communicate with the library function libefp through subroutine check_fail() that passes the atomic coordinate and point charge coordinate information for each fragment.</p>
+
+<p>When running a Monte-Carlo simulation, sim_mc calls on mc_step() multiple times in a while loop for the number of max_steps the user specifies. At each step, mc_rand() is called to randomize the center of mass (COM) of one fragment in the simulation. The energy of the state is obtained through compute_efp() that calls on libefp function efp_compute() through compute_energy(). With each Monte-Carlo step, evaluation of the move is done through check_acceptance(). If the move is accepted, the proposed coordinates stored in struct x_prop will be copied to struct x. Else, another step is taken and the proposed configuration is evaluated.</p>
+
+<p><strong>S22 Dataset</strong></p>
+
+<p>In order to examine the robust of the Monte-Carlo code it was necessary to examine the ability of the program to sample different phase space of different systems. Previous efp parameters generated for the S22 dataset are readily available through the libefp package. The Coulomb part of these parameters was obtained with analytic Stone DMA, using HF/6-31+G(d)(42-44) and HF/6-31G(d) for nonaromatic and aromatic molecules, respectively. The rest of the potential, that is, static and dynamic polarizability tensors, wave function, Fock matrix, etc., were obtained with the 6-311++G(3df,2p) basis set.(44-46) To account for the short-range charge-penetration effects, overlap-based electrostatic and dispersion screenings as well as Gaussian-like polarization screening were employed.</p>
+
+<p><em>Finding the potential minima from an optimized geometry</em></p>
+
+<p><img src="/images/efpmd_mc/ccsdstructures.png" alt="png" /></p>
+
+<p>S22 is a data set of dimer complexes are divided into three subgroups: (i) hydrogen bonded complexes; (ii) complexes with predominant dispersion stabilization; (iii) mixed complexes in which electrostatic and dispersion contributions that are similar in magnitude.  Of the 22  complexes, 6 of the dimers were optimized at the CCSD(T) level in cc-pVTZ and cc-pVQZ basis sets, and so were selected as initial configurations.</p>
+
+<p>Each configuration served as the initial step, for an EFP-MC simulation with 10,000. Each simulation was run with a displacement maximum threshold of 0.05 and displacement modifier of 0.95 utilized ever 500 steps. After the simulation, the configuration with the lowest energy was obtained for each dimer and geometry optimized using efpmd. The geometry optimized structure following Monte-Carlo simulation (EFP MC_Opt) was then compared against a EFP geometry optimized structure (EFP Opt) and the initial CCSD(T) structure itself (CCSD Opt).</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Complex</th>
+      <th>EFP MC</th>
+      <th>EFP MC_Opt</th>
+      <th>EFP Opt</th>
+      <th>CCSD Opt</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ammonia</td>
+      <td>-4.72</td>
+      <td>-5.37</td>
+      <td>-5.37</td>
+      <td>-3.17</td>
+    </tr>
+    <tr>
+      <td>ethene</td>
+      <td>-2.70</td>
+      <td>-3.16</td>
+      <td>-3.16</td>
+      <td>-1.51</td>
+    </tr>
+    <tr>
+      <td>ethene-ethyne</td>
+      <td>-1.92</td>
+      <td>-2.32</td>
+      <td>-2.32</td>
+      <td>-1.53</td>
+    </tr>
+    <tr>
+      <td>formic acid</td>
+      <td>-980.38</td>
+      <td>-16.65</td>
+      <td>-16.65</td>
+      <td>-18.61</td>
+    </tr>
+    <tr>
+      <td>methane</td>
+      <td>-0.92</td>
+      <td>-1.04</td>
+      <td>-1.04</td>
+      <td>-0.53</td>
+    </tr>
+    <tr>
+      <td>water</td>
+      <td>-5.90</td>
+      <td>-5.99</td>
+      <td>-5.99</td>
+      <td>-5.02</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Using the Monte-Carlo method with EFP would likely find a non-equilibrium configuration close to one of the local EFP minima. Optimization of that non-equilibrium configuration, would result in finding this local EFP minimum. EFP-MC values for the lowest energy minima using a geometry optimized EFP-MC (EFP MC_Opt), EFP-MC (EFP MC), EFP optimized structure (EFP Opt), and CCSD(T) initial reference structure (CCSD Opt).</p>
+
+<p><em>Finding Potential Minima From Non-equilibrium Geometries</em>
+Rather than focus on finding a single minima/stationary point, it was important to see if the Monte-Carlo algorithm in conjunction with EFP would be able to explore and find local minima beyond the minima obtained through geometry optimization. Thus, the EFP parameters for 6 dimer complex from the S22 dataset were once more utilized. However, the initial configurations were not the obtained CCSD(T) geometry optimized structures, but were randomly placed twice the original intermolecular distance apart. These geometries were obtained from the S22 non-equilibrium geometries . For each dimer complex, a Monte-Carlo simulation was run for 10,000 steps, displacement maximum threshold of 0.05 and displacement modifier of 0.95 utilized ever 500 steps. After the simulation, the configuration with the lowest energy was obtained for each dimer and geometry optimized using efpmd. The geometry optimized structure following Monte-Carlo simulation was then compared against a reference efpmd geometry optimized starting from the 10 angstrom apart dimer structure.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Complex</th>
+      <th>EFP MC_Opt</th>
+      <th>EFP Opt</th>
+      <th>CCSD Opt</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ammonia</td>
+      <td>-</td>
+      <td>-1.67</td>
+      <td>-0.36</td>
+    </tr>
+    <tr>
+      <td>ethene</td>
+      <td>-1.86</td>
+      <td>-3.15</td>
+      <td>-0.03</td>
+    </tr>
+    <tr>
+      <td>ethene-ethyne</td>
+      <td>-1.55</td>
+      <td>-1.54</td>
+      <td>-0.15</td>
+    </tr>
+    <tr>
+      <td>formic acid</td>
+      <td>-16.61</td>
+      <td>-16.61</td>
+      <td>-3.63</td>
+    </tr>
+    <tr>
+      <td>methane</td>
+      <td>-1.03</td>
+      <td>-1.03</td>
+      <td>-0.01</td>
+    </tr>
+    <tr>
+      <td>water</td>
+      <td>-7.07</td>
+      <td>-5.71</td>
+      <td>-0.96</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>In the Table above we see that EFP using Monte-Carlo was able to obtain different minima (EFP MC_Opt vs. EFP Opt) rather than just falling into the original geometry optimized minima presented  - implying that the system was able to overcome energy barriers and explore different potential energy minima. With Ammonia, we were not able to obtain a optimizable local minima using the same simulation with Monte-Carlo and so is not provided in this table. The ability to EFP-MC explore potential minima was encouraging and thus we attempted to find local stationary points on well established potential energy surfaces of a water dimer.</p>
+
+<p><em>Water Dimer Local Minima</em></p>
+
+<p><img src="/images/efpmd_mc/water_dimer_stationary.png" alt="png" /></p>
+
+<p>Here, the water dimer configuration obtained from S22 non-equilibrium dimer configuration served as the initial step. The simulation was ran with 10,000 steps using efpmd with a displacement maximum threshold of 0.05 and displacement modifier of 0.95 utilized ever 500 steps with periodic conditions of 10 Angstrom. After the simulation, each Monte-Carlo step was then geometry optimized using efpmd. The initial Monte-Carlo obtained configurations are depicted in the figure below as energetic states distinguishable by intermolecular distance (without periodic boundary conditions applied). Although, the obtained energies are obtained with periodic boundary conditions, it was easier to distinguish individual states with respect to their coordinates without PBC in order to ‘smear’ the density of points and see energy groupings.</p>
+
+<p><img src="/images/efpmd_mc/water_dimer_mc_initial.png" alt="png" /></p>
+
+<p><img src="/images/efpmd_mc/water_dimer_opt.png" alt="png" /></p>
+
+<p>When looking at the obtained energy states  from the initial configurations, we see a reduction in the number configurations and it is easy to ascertain that there are approximately 3 ‘lines’ or minima of a water dimer. From these configurations, the 3 final configurations found correspond to the linear (I), cyclic (II), and bifurcated (III) CI potential minima by Matsoka et. all. EFP energies and CI literature energies are reported as:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Configuration</th>
+      <th>EFP</th>
+      <th>CI</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Linear</td>
+      <td>-5.98</td>
+      <td>-5.6</td>
+    </tr>
+    <tr>
+      <td>Cyclic</td>
+      <td>-7.08</td>
+      <td>-4.9</td>
+    </tr>
+    <tr>
+      <td>Bifurcated</td>
+      <td>-5.72</td>
+      <td>-4.2</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><img src="/images/efpmd_mc/efpvsci.png" alt="png" /></p>
+
+<p>This is a promising result that EFP is able to minimally obtain previously cited local minimum obtained using CI methods.</p>
+
+<p><strong>Conclusions</strong></p>
+
+<p>The theoretical and technical implementation of the Monte-Carlo method in the libefp package is reported. Benchmark studies on the ability of EFP-MC to appropriately phase-space sample relative to both CCSD(T) geometry optimized equilibrium and non-equilibrium geometries on the S22 dataset are reported. The configurations obtained and presented here are in good agreement with those obtained using accurate first principles methods as demonstrated by finding the linear, cyclic, and bifurcated structures with comparable energetics. These results demonstrate EFP-MC as method for obtaining local and global minima on a potential energy surface of a molecular model. Thus, this work serves as a promising means to perform co-crystal screening with EFP-MC as a sophisticated alternative to docking methods.</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/tags/#efp-method" class="page__taxonomy-item p-category" rel="tag">efp method</a><span class="sep">, </span>
+    
+      <a href="/tags/#efpmd" class="page__taxonomy-item p-category" rel="tag">EFPMD</a><span class="sep">, </span>
+    
+      <a href="/tags/#libefp" class="page__taxonomy-item p-category" rel="tag">libefp</a><span class="sep">, </span>
+    
+      <a href="/tags/#md" class="page__taxonomy-item p-category" rel="tag">MD</a><span class="sep">, </span>
+    
+      <a href="/tags/#molecular-dynamics" class="page__taxonomy-item p-category" rel="tag">molecular dynamics</a><span class="sep">, </span>
+    
+      <a href="/tags/#polarizable-force-field" class="page__taxonomy-item p-category" rel="tag">polarizable force field</a>
+    
+    </span>
+  </p>
+
+
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2020-06-07T00:00:00-04:00">June 7, 2020</time></p>
+
+      </footer>
+
+      <section class="page__share">
+  
+    <h4 class="page__share-title">Share on</h4>
+  
+
+  <a href="https://twitter.com/intent/tweet?text=EFPMC%3A+A+Monte+Carlo+implementation+with+the+EFP+Method%20http%3A%2F%2Flocalhost%3A4000%2FEFPMC%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A4000%2FEFPMC%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+
+  <a href="https://www.linkedin.com/shareArticle?mini=true&url=http%3A%2F%2Flocalhost%3A4000%2FEFPMC%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+</section>
+
+
+      
+  <nav class="pagination">
+    
+      <a href="/iowaplots/" class="pagination--pager" title="Iowa Plots
+">Previous</a>
+    
+    
+      <a href="/similarity_measures/" class="pagination--pager" title="Molecular Fingerprints: Implementation of a pairwise distribution based molecular representation
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h2 class="page__related-title">You may also enjoy</h2>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/similarity_measures/" rel="permalink">Molecular Fingerprints: Implementation of a pairwise distribution based molecular representation
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+
+    
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          7 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">Classifying Molecular Configurations/Representations
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/iowaplots/" rel="permalink">Iowa Plots
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+
+    
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          5 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">Data Wrangling, Data Science, Messy Data
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+      <li><strong>Follow:</strong></li>
+    
+
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+
+    
+      <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2022 Terri Bui, PhD. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>
